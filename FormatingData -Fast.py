@@ -1,3 +1,6 @@
+# Data : 2022/11/17 16:04
+# Author: Shawn Shi
+# Right Reserved By COROS
 # Data : 2022/11/16 9:53
 # Author: Shawn Shi
 # Right Reserved By COROS
@@ -73,7 +76,8 @@ def gain_chara_coloring(filename, xls_sheet):
     ]
     sheet_name = xls_sheet.name
     df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
-    df.index = pd.Index(list(i for i in range(29, len(df)+29)))
+    df.index = pd.Index(list(i for i in range(29, len(df) + 29)))
+    # print(len(df.index))
     df.columns = pd.Index(list('BCDEFGHIJKLMN'))
     df = df.loc[list(i for i in range(29, 176))]
     # df.loc[29, 'B'] = gain_chara_color.keys[0]
@@ -110,9 +114,9 @@ def gain_chara_coloring(filename, xls_sheet):
         elif df.loc[row, col] < -9.5:
             df.loc[row, col] = 7
     # print(df)
-    for col, row in product(data_col, chara_data_row+gain_data_row):
+    for col, row in product(data_col, chara_data_row + gain_data_row):
         # print(col,row)
-        xls_sheet.range(col+str(row)).color = gain_chara_color[int(df.loc[row, col])]
+        xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
 
 
 def get_data(filename):
@@ -261,8 +265,11 @@ if __name__ == "__main__":
     for file in glob.glob('./*.xls'):
         # init()
         print('文件 %s 处理中，请稍后......' % file[2:])
-        start_time = time.perf_counter()
-        get_data(file)
-        write_data(file)
+        try:
+            start_time = time.perf_counter()
+            get_data(file)
+            write_data(file)
+        except:
+            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
         print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
     input('按任意键结束...')
