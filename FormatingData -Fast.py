@@ -49,6 +49,25 @@ def gain_value(xls_sheet, dict_name, freq):
     # return dict_name
 
 
+# initialize gain data in a specified frequency band
+def gain_value_ini(xls_sheet, dict_name, freq):
+    freq_list = list(dict_name.keys())
+    theta_list = list(dict_name[freq_list[0]].keys())
+    # print(xls_sheet.name)
+    if freq == 'l1':
+        for key in dict_name:
+            if key in ['1560MHz', '1580MHz', '1610MHz']:
+                for i in range(0, 5):
+                    dict_name[key][theta_list[i]] = 0
+
+    if freq == 'l5':
+        for key in dict_name:
+            # for sub_key in key:
+            if key in ['1170MHz', '1190MHz', '1210MHz']:
+                for i in range(0, 5):
+                    dict_name[key][theta_list[i]] = 0
+
+
 def effi_value(xls_sheet, effi_name, freq):
     if freq in ['l1', 'l5']:
         effi_name[freq] = xls_sheet.range('B3:B25').value
@@ -97,21 +116,21 @@ def gain_chara_coloring(filename, xls_sheet):
         else:
             df.loc[row, col] = math.ceil(((-df.loc[row, col]) - 6) / 2)
     for col, row in product(data_col, chara_data_row):
-        if df.loc[row, col] >= 15.4:
+        if 0 < df.loc[row, col] <= 3:
             df.loc[row, col] = 0
-        elif 9.5 <= df.loc[row, col] < 15.4:
+        elif 3 < df.loc[row, col] <= 6:
             df.loc[row, col] = 1
-        elif 5.9 <= df.loc[row, col] < 9.5:
+        elif 6 < df.loc[row, col] <= 10:
             df.loc[row, col] = 2
-        elif 2.3 <= df.loc[row, col] < 5.9:
+        elif 10 < df.loc[row, col] <= 18:
             df.loc[row, col] = 3
-        elif 0 <= df.loc[row, col] < 2.3:
+        elif df.loc[row, col] > 18:
             df.loc[row, col] = 4
-        elif -3.3 <= df.loc[row, col] < 0:
+        elif df.loc[row, col] <= -14:
             df.loc[row, col] = 5
-        elif -9.5 <= df.loc[row, col] < -3.3:
+        elif -14 < df.loc[row, col] <= -6:
             df.loc[row, col] = 6
-        elif df.loc[row, col] < -9.5:
+        elif -6 < df.loc[row, col] < 0:
             df.loc[row, col] = 7
     # print(df)
     for col, row in product(data_col, chara_data_row + gain_data_row):
@@ -177,36 +196,65 @@ def get_data(filename):
     l5_sheets = [i for i in gps_sheets if 'L5' in i]
     bt_sheets = [i for i in wb.sheet_names if 'BT' in i]
     # ws = wb.sheets[0]
+    # Collect the dut name
+    l1_dut_name = [i.replace('L1-', '') for i in l1_sheets]
+    l5_dut_name = [i.replace('L5-', '') for i in l5_sheets]
+    bt_dut_name = [i.replace('BT-', '') for i in bt_sheets]
+    dut_name = list(set(l1_dut_name + l5_dut_name + bt_dut_name))
+    # get gain and efficiency data
+    for dut in dut_name:
+        if dut in l1_dut_name:
+            ds = wb.sheets['L1-' + dut]
+            gain_value(ds, gain_data, 'l1')
+            effi_value(ds, effi_data, 'l1')
+        else:
+            effi_data['l1'] = []
+            gain_value_ini(ds, gain_data, 'l1')
+        if dut in l5_dut_name:
+            ds = wb.sheets['L5-' + dut]
+            gain_value(ds, gain_data, 'l5')
+            effi_value(ds, effi_data, 'l5')
+        else:
+            effi_data['l5'] = []
+            gain_value_ini(ds, gain_data, 'l5')
+        if dut in bt_dut_name:
+            ds = wb.sheets['BT-' + dut]
+            effi_value(ds, effi_data, 'bt')
+        else:
+            effi_data['bt'] = []
+        dut_effi[dut] = copy.deepcopy(effi_data)
+        dut_gain[dut] = copy.deepcopy(gain_data)
 
-    # get gain data
-    for l1_sheet_name in l1_sheets:
-        # print(l1_sheets)
-        dut_name = l1_sheet_name.replace('L1-', '')
-        ds = wb.sheets[l1_sheet_name]
-        # print(ds)
-        gain_value(ds, gain_data, 'l1')
-        effi_value(ds, effi_data, 'l1')
-        for l5_sheet_name in l5_sheets:
-            ds = wb.sheets[l5_sheet_name]
-            if dut_name in l5_sheet_name:
-                gain_value(ds, gain_data, 'l5')
-                effi_value(ds, effi_data, 'l5')
-                break
-            else:  # set to 0
-                for key in gain_data:
-                    for i in gain_data[key].keys():
-                        if key in ['1170MHz', '1190MHz', '1210MHz']:
-                            gain_data[key][i] = 0
-                effi_data['l5'] = []
+    # for l1_sheet_name in l1_sheets:
+    #     # print(l1_sheets)
+    #     dut_name = l1_sheet_name.replace('L1-', '')
+    #     ds = wb.sheets[l1_sheet_name]
+    #     # print(ds)
+    #     gain_value(ds, gain_data, 'l1')
+    #     effi_value(ds, effi_data, 'l1')
+    #     for l5_sheet_name in l5_sheets:
+    #         ds = wb.sheets[l5_sheet_name]
+    #         if dut_name in l5_sheet_name:
+    #             gain_value(ds, gain_data, 'l5')
+    #             effi_value(ds, effi_data, 'l5')
+    #             # once find the l5 data, stop to search again
+    #             break
+    #         else:  # set to 0
+    #             for key in gain_data:
+    #                 for i in gain_data[key].keys():
+    #                     if key in ['1170MHz', '1190MHz', '1210MHz']:
+    #                         gain_data[key][i] = 0
+    #             effi_data['l5'] = []
+    #
+    #     for bt_sheet_name in bt_sheets:
+    #         ds = wb.sheets(bt_sheet_name)
+    #         if dut_name in bt_sheet_name:
+    #             effi_value(ds, effi_data, 'bt')
+    #             # once find the bt data, stop to search again
+    #             break
+    #         else:
+    #             effi_data['bt'] = []
 
-        for bt_sheet_name in bt_sheets:
-            ds = wb.sheets(bt_sheet_name)
-            if dut_name in bt_sheet_name:
-                effi_value(ds, effi_data, 'bt')
-            else:
-                effi_data['bt'] = []
-        dut_effi[dut_name] = copy.deepcopy(effi_data)
-        dut_gain[dut_name] = copy.deepcopy(gain_data)
     # Coloring gain and characteristic data
     for gps_sheet_name in gps_sheets:
         gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
@@ -270,6 +318,6 @@ if __name__ == "__main__":
             get_data(file)
             write_data(file)
         except:
-            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+             print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
         print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
     input('按任意键结束...')
