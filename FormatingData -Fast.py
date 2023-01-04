@@ -17,7 +17,6 @@ from itertools import product
 import tkinter as tk
 from tkinter import filedialog
 
-
 dut_gain = {}
 dut_effi = {}
 
@@ -239,9 +238,14 @@ def write_data(filename):
     freq_color = [(172, 185, 202), (255, 255, 0), (0, 176, 80), (255, 192, 0), (0, 112, 192), (146, 208, 80)]
     wb = xw.Book(filename)
     ws = wb.sheets[0]
+    # ws.range('A1:I1').column_width = 20
+    ws.range('A15:A100').api.HorizontalAlignment = -4108  # center
+    ws.range('C15:G100').api.HorizontalAlignment = -4108
+    ws.range('B15:B100').api.HorizontalAlignment = -4131  # Left
+    ws.range('A15:G100').api.Font.Bold = True
     # print(ws)
-    ws.range('A15:J50').value = ''
-    ws.range('A15:J50').color = (255, 255, 255)
+    ws.range('A15:J100').value = ''
+    ws.range('A15:J100').color = (255, 255, 255)
     # dut_num =  len(dut_data)
     dut_list = list(dut_gain.keys())
     freq_list = list(dut_gain[dut_list[0]].keys())
@@ -273,8 +277,9 @@ def write_data(filename):
                     round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
 
     # write efficiency data
-    ws.range('M2:V71').value = ''
-    ws.range('L3:V71').color = (255, 255, 255)
+    ws.range('M2:Z71').value = ''
+    ws.range('L3:Z71').color = (255, 255, 255)
+    ws.range('M2:Z71').api.HorizontalAlignment = -4108  # center
     dut_col = {0: 'M', 1: 'N', 2: 'O', 3: 'P', 4: 'Q', 5: 'R', 6: 'S', 7: 'T', 8: 'U', 9: 'V'}
     for m in range(len(dut_list)):
         ws.range(dut_col[m] + str(2)).value = dut_list[m]
@@ -298,8 +303,9 @@ def write_data(filename):
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()
+    print('***************请选择要分析的文件目录****************')
     file_path = filedialog.askdirectory()
-    for file in glob.glob(file_path+'/*.xls'):
+    for file in glob.glob(file_path + '/*.xls'):
         # init()
         print('文件 %s 处理中，请稍后......' % file[2:])
         try:
