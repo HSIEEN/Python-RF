@@ -14,6 +14,10 @@ import numpy as np
 import pandas as pd
 from itertools import product
 
+import tkinter as tk
+from tkinter import filedialog
+
+
 dut_gain = {}
 dut_effi = {}
 
@@ -227,7 +231,8 @@ def get_data(filename):
 
     # Coloring gain and characteristic data
     for gps_sheet_name in gps_sheets:
-        gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
+        if 'L5' in gps_sheet_name:  # debug
+            gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
 
 
 def write_data(filename):
@@ -252,18 +257,19 @@ def write_data(filename):
         if dut_gain[dut][freq_list[0]][theta_list[0]] != 0:
             n = 0
             break
-            # write data
+    # write data
     for i in range(n, 6):
-
-        ws.range('A' + (str(15 + len(dut_list) * (i-n)))).value = freq_list[i]
+        ws.range('A' + (str(15 + len(dut_list) * (i - n)))).value = freq_list[i]
         # print(str('A' + str(15 + len(dut_list) * i)+':'+'A' + str(15 + len(dut_list) * i+len(dut_list))))
-        ws.range('A' + str(15 + len(dut_list) * (i-n)) + ':' + 'A' + str(15 + len(dut_list) * (i-n) + len(dut_list) - 1),
-                 'A' + str(15 + len(dut_list) * (i-n)) + ':' + 'G' + str(15 + len(dut_list) * (i-n))).color = freq_color[i]
+        ws.range(
+            'A' + str(15 + len(dut_list) * (i - n)) + ':' + 'A' + str(15 + len(dut_list) * (i - n) + len(dut_list) - 1),
+            'A' + str(15 + len(dut_list) * (i - n)) + ':' + 'G' + str(15 + len(dut_list) * (i - n))).color = freq_color[
+            i]
         for j in range(0, len(dut_list)):
-            ws.range('B' + str(15 + len(dut_list) * (i-n) + j)).value = dut_list[j]
+            ws.range('B' + str(15 + len(dut_list) * (i - n) + j)).value = dut_list[j]
             # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
             for theta in theta_list:
-                ws.range(theta_col[theta] + str(15 + len(dut_list) * (i-n) + j)).value = \
+                ws.range(theta_col[theta] + str(15 + len(dut_list) * (i - n) + j)).value = \
                     round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
 
     # write efficiency data
@@ -290,7 +296,10 @@ def write_data(filename):
 
 
 if __name__ == "__main__":
-    for file in glob.glob('./*.xls'):
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.askdirectory()
+    for file in glob.glob(file_path+'/*.xls'):
         # init()
         print('文件 %s 处理中，请稍后......' % file[2:])
         try:
@@ -298,6 +307,6 @@ if __name__ == "__main__":
             get_data(file)
             write_data(file)
         except:
-          print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
         print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
     input('按Enter键结束...')
