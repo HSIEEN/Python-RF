@@ -194,10 +194,10 @@ def get_data(filename):
 
     }
     wb = xw.Book(filename)
-    gps_sheets = [i for i in wb.sheet_names if ('L1' in i or 'L5' in i)]
-    l1_sheets = [i for i in gps_sheets if 'L1' in i]
-    l5_sheets = [i for i in gps_sheets if 'L5' in i]
-    bt_sheets = [i for i in wb.sheet_names if 'BT' in i]
+    gps_sheets = [i for i in wb.sheet_names if ('L1-' in i or 'L5-' in i)]
+    l1_sheets = [i for i in gps_sheets if 'L1-' in i]
+    l5_sheets = [i for i in gps_sheets if 'L5-' in i]
+    bt_sheets = [i for i in wb.sheet_names if 'BT-' in i]
     # ws = wb.sheets[0]
     # Collect the dut name
     l1_dut_name = [i.replace('L1-', '') for i in l1_sheets]
@@ -230,14 +230,14 @@ def get_data(filename):
 
     # Coloring gain and characteristic data
     for gps_sheet_name in gps_sheets:
-        if 'L5' in gps_sheet_name:  # debug
-            gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
+        # if 'L5' in gps_sheet_name:  # debug
+        gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
 
 
 def write_data(filename):
     freq_color = [(172, 185, 202), (255, 255, 0), (0, 176, 80), (255, 192, 0), (0, 112, 192), (146, 208, 80)]
     wb = xw.Book(filename)
-    ws = wb.sheets[0]
+    ws = wb.sheets['Conclusion']
     # ws.range('A1:I1').column_width = 20
     ws.range('A15:A100').api.HorizontalAlignment = -4108  # center
     ws.range('C15:G100').api.HorizontalAlignment = -4108
@@ -298,6 +298,8 @@ def write_data(filename):
     ws.range('L25:' + dut_col[len(dut_list) - 1] + str(25)).color = (0, 176, 80)
     ws.range('L48:' + dut_col[len(dut_list) - 1] + str(48)).color = (0, 176, 80)
     ws.range('L71:' + dut_col[len(dut_list) - 1] + str(71)).color = (0, 176, 80)
+    wb.save()
+    xw.App().quit()
 
 
 if __name__ == "__main__":
