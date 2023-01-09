@@ -193,6 +193,10 @@ def get_data(filename):
         },
 
     }
+    dut_effi.clear()
+    dut_gain.clear()
+    # dut_gain = {}
+    # dut_name = []
     wb = xw.Book(filename)
     gps_sheets = [i for i in wb.sheet_names if ('L1-' in i or 'L5-' in i)]
     l1_sheets = [i for i in gps_sheets if 'L1-' in i]
