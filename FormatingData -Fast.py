@@ -13,7 +13,6 @@ import math
 import numpy as np
 import pandas as pd
 from itertools import product
-
 import tkinter as tk
 from tkinter import filedialog
 
@@ -78,7 +77,7 @@ def effi_value(xls_sheet, effi_name, freq):
             xls_sheet.range('A9:AC14').color = (255, 255, 0)
         else:
             xls_sheet.range('A9:AC15').color = (255, 255, 0)
-    else:
+    else:  # read BT effi data
         effi_name[freq] = xls_sheet.range('B8:B28').value
         effi_name[freq].append(xls_sheet.range('B34').value)
         effi_name[freq].append(xls_sheet.range('B35').value)
@@ -260,25 +259,35 @@ def write_data(filename):
     # record if there are L5 data, no in default.
     # n = 3 means 3 frequencies in L5 Band won't be written in Excel rows
     n = 3
+    # m is the number of DUT without gain data
+    m = 0
     for dut in dut_list:
         # if there are L5 gain data, no data row will be ignored in Excel
         if dut_gain[dut][freq_list[0]][theta_list[0]] != 0:
             n = 0
-            break
+        if dut_gain[dut][freq_list[3]][theta_list[0]] == 0:
+            m = m + 1
     # write data
     for i in range(n, 6):
-        ws.range('A' + (str(15 + len(dut_list) * (i - n)))).value = freq_list[i]
+        ws.range('A' + (str(15 + (len(dut_list) - m) * (i - n)))).value = freq_list[i]
         # print(str('A' + str(15 + len(dut_list) * i)+':'+'A' + str(15 + len(dut_list) * i+len(dut_list))))
         ws.range(
-            'A' + str(15 + len(dut_list) * (i - n)) + ':' + 'A' + str(15 + len(dut_list) * (i - n) + len(dut_list) - 1),
-            'A' + str(15 + len(dut_list) * (i - n)) + ':' + 'G' + str(15 + len(dut_list) * (i - n))).color = freq_color[
+            'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
+            'A' + str(15 + (len(dut_list) - m) * (i - n) + (len(dut_list) - m) - 1),
+            'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
+            'G' + str(15 + (len(dut_list) - m) * (i - n))).color = freq_color[
             i]
+        # m = 0  # the number of dut to be deleted in gain value
+        k = 0
         for j in range(0, len(dut_list)):
-            ws.range('B' + str(15 + len(dut_list) * (i - n) + j)).value = dut_list[j]
-            # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
-            for theta in theta_list:
-                ws.range(theta_col[theta] + str(15 + len(dut_list) * (i - n) + j)).value = \
-                    round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
+            if dut_gain[dut_list[j]][freq_list[0]][theta_list[0]] != 0:
+                ws.range('B' + str(15 + (len(dut_list) - m) * (i - n) + j-k)).value = dut_list[j]
+                # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
+                for theta in theta_list:
+                    ws.range(theta_col[theta] + str(15 + (len(dut_list) - m) * (i - n) + j-k)).value = \
+                        round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
+            else:
+                k = k + 1
 
     # write efficiency data
     ws.range('M2:Z71').value = ''
@@ -314,11 +323,11 @@ if __name__ == "__main__":
     for file in glob.glob(file_path + '/*.xls'):
         # init()
         print('文件 %s 处理中，请稍后......' % file[2:])
-        try:
-            start_time = time.perf_counter()
-            get_data(file)
-            write_data(file)
-        except:
-            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+        # try:
+        start_time = time.perf_counter()
+        get_data(file)
+        write_data(file)
+        # except:
+        print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
         print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
     input('按Enter键结束...')
