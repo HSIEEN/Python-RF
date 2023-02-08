@@ -30,24 +30,30 @@ def gain_value(xls_sheet, dict_name, freq):
             if key == '1560MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(28 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(36))).value
             if key == '1580MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(78 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(86))).value
             if key == '1610MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(128 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(136))).value
     if freq == 'l5':
         for key in dict_name:
             # for sub_key in key:
             if key == '1170MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(28 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(36))).value
             if key == '1190MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(78 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(86))).value
             if key == '1210MHz':
                 for i in range(0, 5):
                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(128 + i))).value
+                dict_name[key]['39'] = xls_sheet.range('S' + (str(136))).value
     # return dict_name
 
 
@@ -153,42 +159,48 @@ def get_data(filename):
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
         '1190MHz': {
             '30°': 0,
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
         '1210MHz': {
             '30°': 0,
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
         '1560MHz': {
             '30°': 0,
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
         '1580MHz': {
             '30°': 0,
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
         '1610MHz': {
             '30°': 0,
             '45°': 0,
             '60°': 0,
             '90°': 0,
-            '120°': 0
+            '120°': 0,
+            '39': 0
         },
 
     }
@@ -202,7 +214,7 @@ def get_data(filename):
     l5_sheets = [i for i in gps_sheets if 'L5-' in i]
     bt_sheets = [i for i in wb.sheet_names if 'BT-' in i]
     # ws = wb.sheets[0]
-    # Collect the dut name
+    # Collect the dut names
     l1_dut_name = [i.replace('L1-', '') for i in l1_sheets]
     l5_dut_name = [i.replace('L5-', '') for i in l5_sheets]
     bt_dut_name = [i.replace('BT-', '') for i in bt_sheets]
@@ -243,9 +255,9 @@ def write_data(filename):
     ws = wb.sheets['Conclusion']
     # ws.range('A1:I1').column_width = 20
     ws.range('A15:A100').api.HorizontalAlignment = -4108  # center
-    ws.range('C15:G100').api.HorizontalAlignment = -4108
+    ws.range('C15:J100').api.HorizontalAlignment = -4108
     ws.range('B15:B100').api.HorizontalAlignment = -4131  # Left
-    ws.range('A15:G100').api.Font.Bold = True
+    ws.range('A15:J100').api.Font.Bold = True
     # print(ws)
     ws.range('A15:J100').value = ''
     ws.range('A15:J100').color = (255, 255, 255)
@@ -255,7 +267,7 @@ def write_data(filename):
     theta_list = list(dut_gain[dut_list[0]][freq_list[0]].keys())
     # print(freq_list)
     # write gain data
-    theta_col = {'30°': 'C', '45°': 'D', '60°': 'E', '90°': 'F', '120°': 'G'}
+    theta_col = {'30°': 'C', '45°': 'D', '60°': 'E', '90°': 'F', '120°': 'G', '39': 'I'}
     # record if there are L5 data, no in default.
     # n = 3 means 3 frequencies in L5 Band won't be written in Excel rows
     n = 3
@@ -275,16 +287,17 @@ def write_data(filename):
             'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
             'A' + str(15 + (len(dut_list) - m) * (i - n) + (len(dut_list) - m) - 1),
             'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
-            'G' + str(15 + (len(dut_list) - m) * (i - n))).color = freq_color[
+            'J' + str(15 + (len(dut_list) - m) * (i - n))).color = freq_color[
             i]
-        # m = 0  # the number of dut to be deleted in gain value
+        # k= 0  # the number of line to be ignored
         k = 0
         for j in range(0, len(dut_list)):
-            if dut_gain[dut_list[j]][freq_list[0]][theta_list[0]] != 0:
-                ws.range('B' + str(15 + (len(dut_list) - m) * (i - n) + j-k)).value = dut_list[j]
+            if dut_gain[dut_list[j]][freq_list[0]][theta_list[0]] != 0 or \
+                    dut_gain[dut_list[j]][freq_list[3]][theta_list[0]] != 0:
+                ws.range('B' + str(15 + (len(dut_list) - m) * (i - n) + j - k)).value = dut_list[j]
                 # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
                 for theta in theta_list:
-                    ws.range(theta_col[theta] + str(15 + (len(dut_list) - m) * (i - n) + j-k)).value = \
+                    ws.range(theta_col[theta] + str(15 + (len(dut_list) - m) * (i - n) + j - k)).value = \
                         round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
             else:
                 k = k + 1
@@ -323,11 +336,11 @@ if __name__ == "__main__":
     for file in glob.glob(file_path + '/*.xls'):
         # init()
         print('文件 %s 处理中，请稍后......' % file[2:])
-        # try:
-        start_time = time.perf_counter()
-        get_data(file)
-        write_data(file)
-        # except:
-        print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+        try:
+            start_time = time.perf_counter()
+            get_data(file)
+            write_data(file)
+        except:
+            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
         print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
     input('按Enter键结束...')
