@@ -20,56 +20,6 @@ dut_gain = {}
 dut_effi = {}
 
 
-# def gain_value(xls_sheet, dict_name, freq):
-#     freq_list = list(dict_name.keys())
-#     theta_list = list(dict_name[freq_list[0]].keys())
-#     # print(xls_sheet.name)
-#     if freq == 'l1':
-#         for key in dict_name:
-#             # for sub_key in key:
-#             if key == '1560MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(28 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(36))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(37))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(38))).value
-#             if key == '1580MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(78 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(86))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(87))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(88))).value
-#             if key == '1610MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(128 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(136))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(137))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(138))).value
-#     if freq == 'l5':
-#         for key in dict_name:
-#             # for sub_key in key:
-#             if key == '1170MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(28 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(36))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(37))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(38))).value
-#             if key == '1190MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(78 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(86))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(87))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(88))).value
-#             if key == '1210MHz':
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = xls_sheet.range('S' + (str(128 + i))).value
-#                 dict_name[key]['d30'] = xls_sheet.range('S' + (str(136))).value
-#                 dict_name[key]['d60'] = xls_sheet.range('S' + (str(137))).value
-#                 dict_name[key]['d90'] = xls_sheet.range('S' + (str(138))).value
-# return dict_name
-
-
-#
 def gain_value(xls_sheet, dict_name, freq):
     freq_list = list(dict_name.keys())
     theta_list = list(dict_name[freq_list[0]].keys())
@@ -92,26 +42,6 @@ def gain_value(xls_sheet, dict_name, freq):
     # return dict_name
 
 
-#
-# def gain_value_ini(dict_name, freq):
-#     freq_list = list(dict_name.keys())
-#     theta_list = list(dict_name[freq_list[0]].keys())
-#     # print(xls_sheet.name)
-#     if freq == 'l1':
-#         for key in dict_name:
-#             if key in ['1560MHz', '1580MHz', '1610MHz']:
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = 0
-#
-#     if freq == 'l5':
-#         for key in dict_name:
-#             # for sub_key in key:
-#             if key in ['1170MHz', '1190MHz', '1210MHz']:
-#                 for i in range(0, 5):
-#                     dict_name[key][theta_list[i]] = 0
-#
-
-#
 
 # initialize gain data in a specified frequency band
 def gain_value_ini(dict_name, freq):
@@ -195,123 +125,6 @@ def gain_chara_coloring(filename, xls_sheet):
         # print(col,row)
         xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
 
-
-# def get_data(filename):
-#     effi_list = []
-#     effi_data = {
-#         'l1': effi_list,
-#         'l5': effi_list,
-#         'bt': effi_list
-#     }
-#     gain_data = {
-#         '1170MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#         '1190MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#         '1210MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#         '1560MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#         '1580MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#         '1610MHz': {
-#             '30°': 0,
-#             '45°': 0,
-#             '60°': 0,
-#             '90°': 0,
-#             '120°': 0,
-#             'd30': 0,
-#             'd60': 0,
-#             'd90': 0
-#         },
-#
-#     }
-#     dut_effi.clear()
-#     dut_gain.clear()
-#     # dut_gain = {}
-#     # dut_name = []
-#     wb = xw.Book(filename)
-#     gps_sheets = [i for i in wb.sheet_names if ('L1-' in i or 'L5-' in i)]
-#     l1_sheets = [i for i in gps_sheets if 'L1-' in i]
-#     l5_sheets = [i for i in gps_sheets if 'L5-' in i]
-#     bt_sheets = [i for i in wb.sheet_names if 'BT-' in i]
-#     # ws = wb.sheets[0]
-#     # Collect the dut names
-#     l1_dut_name = [i.replace('L1-', '') for i in l1_sheets]
-#     l5_dut_name = [i.replace('L5-', '') for i in l5_sheets]
-#     bt_dut_name = [i.replace('BT-', '') for i in bt_sheets]
-#     dut_name = list(set(l1_dut_name + l5_dut_name + bt_dut_name))
-#     # get gain and efficiency data
-#     for dut in dut_name:
-#         if dut in l1_dut_name:
-#             ds = wb.sheets['L1-' + dut]
-#             gain_value(ds, gain_data, 'l1')
-#             effi_value(ds, effi_data, 'l1')
-#         else:
-#             effi_data['l1'] = []
-#             gain_value_ini(gain_data, 'l1')
-#         if dut in l5_dut_name:
-#             ds = wb.sheets['L5-' + dut]
-#             gain_value(ds, gain_data, 'l5')
-#             effi_value(ds, effi_data, 'l5')
-#         else:
-#             effi_data['l5'] = []
-#             gain_value_ini(gain_data, 'l5')
-#         if dut in bt_dut_name:
-#             ds = wb.sheets['BT-' + dut]
-#             effi_value(ds, effi_data, 'bt')
-#         else:
-#             effi_data['bt'] = []
-#         dut_effi[dut] = copy.deepcopy(effi_data)
-#         dut_gain[dut] = copy.deepcopy(gain_data)
-#
-#     # Coloring gain and characteristic data
-#     for gps_sheet_name in gps_sheets:
-#         # if 'L5' in gps_sheet_name:  # debug
-#         gain_chara_coloring(filename, wb.sheets[gps_sheet_name])
-
-
-#
 
 def get_data(filename):
     effi_list = []
