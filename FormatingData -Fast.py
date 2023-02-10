@@ -42,9 +42,12 @@ def gain_value(xls_sheet, dict_name, freq):
     # return dict_name
 
 
+keys = []
+
 
 # initialize gain data in a specified frequency band
 def gain_value_ini(dict_name, freq):
+    global keys
     freq_list = list(dict_name.keys())
     theta_list = list(dict_name[freq_list[0]].keys())
     if freq == 'l1':
@@ -187,7 +190,6 @@ def get_data(filename):
         gain_chara_coloring(filename, wb.sheets[sheet])
 
 
-#
 def write_data(filename):
     freq_color = [(172, 185, 202), (255, 255, 0), (0, 176, 80), (255, 192, 0), (0, 112, 192), (146, 208, 80)]
     wb = xw.Book(filename)
@@ -268,18 +270,24 @@ def write_data(filename):
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.withdraw()
-    print('***************请选择要分析的文件目录****************')
-    file_path = filedialog.askdirectory()
-    for file in glob.glob(file_path + '/*.xls'):
-        # init()
-        print('文件 %s 处理中，请稍后......' % file[2:])
-        try:
-            start_time = time.perf_counter()
-            get_data(file)
-            write_data(file)
-        except:
-            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
-        print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-    input('按Enter键结束...')
+    inputStr = 'N'
+    while inputStr != 'Y' and inputStr != 'y' and (inputStr == 'N' or inputStr == 'n'):
+        root = tk.Tk()
+        root.withdraw()
+        print('--------Format antenna gain data version 5.7----------')
+        print('-----------All rights are reserved by COROS------------')
+        print('*****************请选择要分析的文件目录******************')
+        file_path = filedialog.askdirectory()
+        if file_path == '':
+            exit()
+        for file in glob.glob(file_path + '/*.xls'):
+            # init()
+            print('文件 %s 处理中，请稍后......' % file[2:])
+            try:
+                start_time = time.perf_counter()
+                get_data(file)
+                write_data(file)
+            except:
+                print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+            print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        inputStr = input('============是否退出程序?=============\n按Y/y退出程序，按N/n重新选择文件夹:')
