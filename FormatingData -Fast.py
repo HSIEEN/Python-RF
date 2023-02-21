@@ -270,19 +270,20 @@ def write_data(filename):
 
 
 if __name__ == "__main__":
-    inputStr = 'N'
-    while inputStr != 'Y' and inputStr != 'y' and (inputStr == 'N' or inputStr == 'n'):
+    if_exit = 'N'
+    while if_exit != 'Y' and if_exit != 'y' and (if_exit == 'N' or if_exit == 'n'):
         root = tk.Tk()
         root.withdraw()
-        print('--------Format antenna gain data version 5.7----------')
+        print('---------Format antenna gain data_version5.8-----------')
         print('-----------All rights are reserved by COROS------------')
-        print('*****************请选择要分析的文件目录******************')
-        file_path = filedialog.askdirectory()
-        if file_path == '':
-            exit()
-        for file in glob.glob(file_path + '/*.xls'):
-            # init()
-            print('文件 %s 处理中，请稍后......' % file[2:])
+        file_or_directory = input('请选择文件或者目录，输入1选择单个文件，输入2选择整个目录:')
+        if file_or_directory == '1':
+            print('*****************请选择一个文件******************')
+            file = filedialog.askopenfile()
+            # name = file.name
+            if not file:
+                exit(0)
+            print('文件 %s 处理中，请稍后......' % file.name[2:])
             try:
                 start_time = time.perf_counter()
                 get_data(file)
@@ -290,4 +291,19 @@ if __name__ == "__main__":
             except:
                 print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-        inputStr = input('============是否退出程序?=============\n按Y/y退出程序，按N/n重新选择文件夹:')
+        else:
+            print('*****************请选择一个目录******************')
+            file_path = filedialog.askdirectory()
+            if not file_path:
+                exit(0)
+            for file in glob.glob(file_path + '/*.xls'):
+                # init()
+                print('文件 %s 处理中，请稍后......' % file[2:])
+                try:
+                    start_time = time.perf_counter()
+                    get_data(file)
+                    write_data(file)
+                except:
+                    print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+                print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        if_exit = input('============是否退出程序?=============\n按Y/y退出程序，按N/n重新选择文件夹:')
