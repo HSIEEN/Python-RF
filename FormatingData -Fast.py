@@ -15,6 +15,7 @@ import pandas as pd
 from itertools import product
 import tkinter as tk
 from tkinter import filedialog
+import sys
 
 dut_gain = {}
 dut_effi = {}
@@ -53,7 +54,7 @@ def gain_value_ini(dict_name, freq):
     if freq == 'l1':
         keys = ['1560MHz', '1580MHz', '1610MHz']
     elif freq == 'l5':
-        keys = ['1170MHz', '1190MHz', '1210MHz']
+        keys = ['1160MHz', '1180MHz', '1190MHz']
     for key in keys:
         for i in range(0, 5):
             dict_name[key][theta_list[i]] = 0
@@ -65,7 +66,7 @@ def effi_value(xls_sheet, effi_name, freq):
         if freq == 'l1':
             xls_sheet.range('A9:AC14').color = (255, 255, 0)
         else:
-            xls_sheet.range('A9:AC15').color = (255, 255, 0)
+            xls_sheet.range('A9:AC12').color = (255, 255, 0)
     else:  # read BT effi data
         effi_name[freq] = xls_sheet.range('B8:B28').value
         effi_name[freq].append(xls_sheet.range('B34').value)
@@ -137,7 +138,7 @@ def get_data(filename):
         'bt': effi_list
     }
 
-    frequencies = ['1170MHz', '1190MHz', '1210MHz', '1560MHz', '1580MHz', '1610MHz']
+    frequencies = ['1160MHz', '1180MHz', '1190MHz', '1560MHz', '1580MHz', '1610MHz']
     angles = ['30°', '45°', '60°', '90°', '120°', 'd30', 'd60', 'd90']
     gain_data = {}
     for freq in frequencies:
@@ -149,6 +150,7 @@ def get_data(filename):
     dut_gain.clear()
     # dut_gain = {}
     # dut_name = []
+    # wb = xw.App().books.open(filename)
     wb = xw.Book(filename)
     gps_sheets = [i for i in wb.sheet_names if ('L1-' in i or 'L5-' in i)]
     l1_sheets = [i for i in gps_sheets if 'L1-' in i]
@@ -189,10 +191,12 @@ def get_data(filename):
     for sheet in gps_sheets:
         gain_chara_coloring(filename, wb.sheets[sheet])
 
+    return wb
 
-def write_data(filename):
+
+def write_data(wb):
     freq_color = [(172, 185, 202), (255, 255, 0), (0, 176, 80), (255, 192, 0), (0, 112, 192), (146, 208, 80)]
-    wb = xw.Book(filename)
+    # wb = xw.App().books(filename)
     ws = wb.sheets['Conclusion']
     # ws.range('A1:I1').column_width = 20
     ws.range('A15:A100').api.HorizontalAlignment = -4108  # center
@@ -257,7 +261,7 @@ def write_data(filename):
         effi = np.array([dut_effi[dut_list[m]]['bt']])
         ws.range(dut_col[m] + str(49)).value = effi.T
     ws.range('L9:' + dut_col[len(dut_list) - 1] + str(14)).color = (255, 255, 0)
-    ws.range('L32:' + dut_col[len(dut_list) - 1] + str(38)).color = (255, 255, 0)
+    ws.range('L32:' + dut_col[len(dut_list) - 1] + str(35)).color = (255, 255, 0)
     ws.range('L54:' + dut_col[len(dut_list) - 1] + str(62)).color = (255, 255, 0)
     ws.range('L24:' + dut_col[len(dut_list) - 1] + str(24)).color = (255, 217, 100)
     ws.range('L47:' + dut_col[len(dut_list) - 1] + str(47)).color = (255, 217, 100)
@@ -266,6 +270,7 @@ def write_data(filename):
     ws.range('L48:' + dut_col[len(dut_list) - 1] + str(48)).color = (0, 176, 80)
     ws.range('L71:' + dut_col[len(dut_list) - 1] + str(71)).color = (0, 176, 80)
     wb.save()
+    wb.close()
     xw.App().quit()
 
 
@@ -274,7 +279,7 @@ if __name__ == "__main__":
     while if_exit != 'Y' and if_exit != 'y' and (if_exit == 'N' or if_exit == 'n'):
         root = tk.Tk()
         root.withdraw()
-        print('---------Format antenna gain data_version5.8-----------')
+        print('---------Format antenna gain data_version5.8.3-----------')
         print('-----------All rights are reserved by COROS------------')
         file_or_directory = input('请选择文件或者目录，输入1选择单个文件，输入2选择整个目录:')
         if file_or_directory == '1':
@@ -282,28 +287,28 @@ if __name__ == "__main__":
             file = filedialog.askopenfile()
             # name = file.name
             if not file:
-                exit(0)
-            print('文件 %s 处理中，请稍后......' % file.name[2:])
-            try:
-                start_time = time.perf_counter()
-                get_data(file)
-                write_data(file)
-            except:
-                print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+                sys.exit("******未选择任何文件，自动退出程序！！！******")
+            print('文件 %s 处理中，请稍后......' % file.name)
+            # try:
+            start_time = time.perf_counter()
+            wb = get_data(file.name)
+            write_data(wb)
+            # except:
+            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
         else:
             print('*****************请选择一个目录******************')
             file_path = filedialog.askdirectory()
             if not file_path:
-                exit(0)
-            for file in glob.glob(file_path + '/*.xls'):
+                sys.exit("******未选择任何文件夹，自动退出程序！！！******")
+            for file in glob.glob(file_path + '/*.xlsx'):
                 # init()
                 print('文件 %s 处理中，请稍后......' % file[2:])
                 try:
                     start_time = time.perf_counter()
-                    get_data(file)
-                    write_data(file)
+                    wb = get_data(file)
+                    write_data(wb)
                 except:
                     print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
                 print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-        if_exit = input('============是否退出程序?=============\n按Y/y退出程序，按N/n重新选择文件夹:')
+        if_exit = input('============是否退出程序?=============\n按Y/y退出程序，按N/n重新选择文件:')
