@@ -6,7 +6,7 @@
 # Right Reserved By COROS
 
 import xlwings as xw
-import glob
+# import glob
 import copy
 import time
 import math
@@ -19,10 +19,6 @@ import sys
 
 dut_gain = {}
 dut_effi = {}
-
-app = xw.App(visible=False, add_book=False)
-app.display_alerts = True
-app.screen_updating = True
 
 
 def gain_value(xls_sheet, dict_name, freq):
@@ -197,6 +193,8 @@ def get_data(filename):
     for sheet in gps_sheets:
         gain_chara_coloring(filename, wb.sheets[sheet])
 
+    # wb.save()
+
     return wb
 
 
@@ -278,9 +276,9 @@ def write_data(wb):
     ws.range('L25:' + dut_col[len(dut_list) - 1] + str(25)).color = (0, 176, 80)
     ws.range('L48:' + dut_col[len(dut_list) - 1] + str(48)).color = (0, 176, 80)
     ws.range('L71:' + dut_col[len(dut_list) - 1] + str(71)).color = (0, 176, 80)
-    # wb.save()
+    wb.save()
     # wb.close()
-    # app.quit()
+    # app.kill()
     # xw.App().kill()
 
 
@@ -289,37 +287,23 @@ if __name__ == "__main__":
     # while if_exit != 'N' and if_exit != 'n' and (if_exit == 'Y' or if_exit == 'y'):
     root = tk.Tk()
     root.withdraw()
-    print('---------Format antenna gain data_version 6.0-----------')
+    print('---------Format antenna gain data_version 6.3-----------')
     print('-----------All rights are reserved by COROS------------')
-    file_or_directory = input('请选择文件或目录，输入1选择单个文件，输入2选择整个目录:')
-    if file_or_directory == '1':
-        print('*****************请选择一个文件******************')
-        file = filedialog.askopenfile()
-        # name = file.name
-        if not file:
-            sys.exit("******未选择任何文件，自动退出程序！！！******")
-        print('文件 %s 处理中，请稍后......' % file.name)
-        try:
-            start_time = time.perf_counter()
-            wb = get_data(file.name)
-            write_data(wb)
-        except:
-            print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
-        print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-    else:
-        print('*****************请选择一个目录******************')
-        file_path = filedialog.askdirectory()
-        if not file_path:
-            sys.exit("******未选择任何文件夹，自动退出程序！！！******")
-        for file in glob.glob(file_path + '/*.xlsx'):
-            # init()
-            print('文件 %s 处理中，请稍后......' % file[2:])
-            try:
-                start_time = time.perf_counter()
-                wb = get_data(file)
-                write_data(wb)
-            except:
-                print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
-            print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-            time.sleep(5)
-        # if_exit = input('============是否继续?=============\n按Y/y重新选择文，按N/n退出程序:')
+    # 'file_or_directory = input('============请选择文件=============')
+    print('*****************请选择一个文件******************')
+    file = filedialog.askopenfile()
+    # name = file.name
+    if not file:
+        sys.exit("******未选择任何文件，自动退出程序！！！******")
+    print('文件 %s 处理中，请稍后......' % file.name)
+    try:
+        app = xw.App(visible=True, add_book=False)
+        app.display_alerts = True
+        app.screen_updating = True
+        start_time = time.perf_counter()
+        wb = get_data(file.name)
+        write_data(wb)
+    except:
+        print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
+    print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+    time.sleep(5)
