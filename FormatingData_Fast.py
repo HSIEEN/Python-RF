@@ -21,6 +21,7 @@ dut_gain = {}
 dut_effi = {}
 
 
+# Read gain data from a xls sheet
 def gain_value(xls_sheet, dict_name, freq):
     freq_list = list(dict_name.keys())
     theta_list = list(dict_name[freq_list[0]].keys())
@@ -63,14 +64,11 @@ def gain_value_ini(dict_name, freq):
 def effi_value(xls_sheet, effi_name, freq):
     if freq in ['l1', 'l5']:
         effi_name[freq] = xls_sheet.range('B3:B25').value
-        if freq == 'l1':
-            xls_sheet.range('A9:AC14').color = (255, 255, 0)
-        else:
-            xls_sheet.range('A9:AC12').color = (255, 255, 0)
+        color_range = 'A9:AC14' if freq == 'l1' else 'A9:AC12'
+        xls_sheet.range(color_range).color = (255, 255, 0)
     else:  # read BT effi data
         effi_name[freq] = xls_sheet.range('B8:B28').value
-        effi_name[freq].append(xls_sheet.range('B34').value)
-        effi_name[freq].append(xls_sheet.range('B35').value)
+        effi_name[freq] += [xls_sheet.range('B34').value, xls_sheet.range('B35').value]
         xls_sheet.range('A13:AC21').color = (255, 255, 0)
 
 
@@ -86,48 +84,74 @@ def gain_chara_coloring(filename, xls_sheet):
         (150, 0, 0)
     ]
     sheet_name = xls_sheet.name
-    df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
-    df.index = pd.Index(list(i for i in range(29, len(df) + 29)))
-    # print(len(df.index))
-    df.columns = pd.Index(list('BCDEFGHIJKLMN'))
-    df = df.loc[list(i for i in range(29, 176))]
-    # df.loc[29, 'B'] = gain_chara_color.keys[0]
-    # print(df, type(df), df.loc[29, 'B'])
+    if 'L1-' in sheet_name or 'L5-' in sheet_name:
+        df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
+        df.index = pd.Index(list(i for i in range(29, len(df) + 29)))
+        # print(len(df.index))
+        df.columns = pd.Index(list('BCDEFGHIJKLMN'))
+        df = df.loc[list(i for i in range(29, 176))]
+        # df.loc[29, 'B'] = gain_chara_color.keys[0]
+        # print(df, type(df), df.loc[29, 'B'])
 
-    gain_data_row = [col for i in range(0, 101) if i % 50 == 0 for col in range(i + 29, i + 42)]
-    data_col = [let for let in "BCDEFGHIJKLMN"]
-    chara_data_row = [col for i in range(0, 101) if i % 50 == 0 for col in range(i + 63, i + 76)]
+        gain_data_row = [col for i in range(0, 101) if i % 50 == 0 for col in range(i + 29, i + 42)]
+        data_col = [let for let in "BCDEFGHIJKLMN"]
+        chara_data_row = [col for i in range(0, 101) if i % 50 == 0 for col in range(i + 63, i + 76)]
 
-    for col, row in product(data_col, gain_data_row):
-        if df.loc[row, col] >= -6:
-            df.loc[row, col] = 0
-        elif -20 <= df.loc[row, col] < -16:
-            df.loc[row, col] = 6
-        elif df.loc[row, col] < -20:
-            df.loc[row, col] = 7
-        else:
-            df.loc[row, col] = math.ceil(((-df.loc[row, col]) - 6) / 2)
-    for col, row in product(data_col, chara_data_row):
-        if 0 < df.loc[row, col] <= 3:
-            df.loc[row, col] = 0
-        elif 3 < df.loc[row, col] <= 6:
-            df.loc[row, col] = 1
-        elif 6 < df.loc[row, col] <= 10:
-            df.loc[row, col] = 2
-        elif 10 < df.loc[row, col] <= 18:
-            df.loc[row, col] = 3
-        elif df.loc[row, col] > 18:
-            df.loc[row, col] = 4
-        elif df.loc[row, col] <= -14:
-            df.loc[row, col] = 5
-        elif -14 < df.loc[row, col] <= -6:
-            df.loc[row, col] = 6
-        elif -6 < df.loc[row, col] < 0:
-            df.loc[row, col] = 7
-    # print(df)
-    for col, row in product(data_col, chara_data_row + gain_data_row):
-        # print(col,row)
-        xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
+        for col, row in product(data_col, gain_data_row):
+            if df.loc[row, col] >= -6:
+                df.loc[row, col] = 0
+            elif -20 <= df.loc[row, col] < -16:
+                df.loc[row, col] = 6
+            elif df.loc[row, col] < -20:
+                df.loc[row, col] = 7
+            else:
+                df.loc[row, col] = math.ceil(((-df.loc[row, col]) - 6) / 2)
+        for col, row in product(data_col, chara_data_row):
+            if 0 < df.loc[row, col] <= 3:
+                df.loc[row, col] = 0
+            elif 3 < df.loc[row, col] <= 6:
+                df.loc[row, col] = 1
+            elif 6 < df.loc[row, col] <= 10:
+                df.loc[row, col] = 2
+            elif 10 < df.loc[row, col] <= 18:
+                df.loc[row, col] = 3
+            elif df.loc[row, col] > 18:
+                df.loc[row, col] = 4
+            elif df.loc[row, col] <= -14:
+                df.loc[row, col] = 5
+            elif -14 < df.loc[row, col] <= -6:
+                df.loc[row, col] = 6
+            elif -6 < df.loc[row, col] < 0:
+                df.loc[row, col] = 7
+        # print(df)
+        for col, row in product(data_col, chara_data_row + gain_data_row):
+            # print(col,row)
+            xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
+    elif 'BT-' in sheet_name:
+        df = pd.read_excel(filename, sheet_name, header=37, usecols='B:N')
+        df.index = pd.Index(list(i for i in range(39, len(df) + 39)))
+        # print(len(df.index))
+        df.columns = pd.Index(list('BCDEFGHIJKLMN'))
+        df = df.loc[list(i for i in range(39, 89))]
+        # df.loc[29, 'B'] = gain_chara_color.keys[0]
+        # print(df, type(df), df.loc[29, 'B'])
+
+        gain_data_row = [col for i in range(0, 37) if i % 18 == 0 for col in range(i + 39, i + 52)]
+        data_col = [let for let in "BCDEFGHIJKLMN"]
+        # chara_data_row = [col for i in range(0, 101) if i % 50 == 0 for col in range(i + 63, i + 76)]
+
+        for col, row in product(data_col, gain_data_row):
+            if df.loc[row, col] >= -6:
+                df.loc[row, col] = 0
+            elif -20 <= df.loc[row, col] < -16:
+                df.loc[row, col] = 6
+            elif df.loc[row, col] < -20:
+                df.loc[row, col] = 7
+            else:
+                df.loc[row, col] = math.ceil(((-df.loc[row, col]) - 6) / 2)
+        for col, row in product(data_col, gain_data_row):
+            # print(col,row)
+            xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
 
 
 def get_data(filename):
@@ -190,7 +214,7 @@ def get_data(filename):
         dut_gain[dut] = copy.deepcopy(gain_data)
 
     # Coloring gain and characteristic data
-    for sheet in gps_sheets:
+    for sheet in gps_sheets+bt_sheets:
         gain_chara_coloring(filename, wb.sheets[sheet])
 
     # wb.save()
@@ -276,7 +300,7 @@ def write_data(wb):
     ws.range('L25:' + dut_col[len(dut_list) - 1] + str(25)).color = (0, 176, 80)
     ws.range('L48:' + dut_col[len(dut_list) - 1] + str(48)).color = (0, 176, 80)
     ws.range('L71:' + dut_col[len(dut_list) - 1] + str(71)).color = (0, 176, 80)
-    wb.save()
+    # wb.save()
     # wb.close()
     # app.kill()
     # xw.App().kill()
