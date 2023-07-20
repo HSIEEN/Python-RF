@@ -26,44 +26,36 @@ def write_self_resonance_frequency(snp_file, line_number):
     else:
         # If an inductor, get min of S21
         freq_at_min = snp_data.f[np.argmin(snp_data.s_mag[:, 1, 0])]
-    # tmp = snp_data.f.min
-    with open(snp_file, "r") as f:
-        contents = f.readlines()
     if snp_data.f.min() < freq_at_min < snp_data.f.max():
-        contents.insert(line_number, f'!The self-resonance frequency is {freq_at_min / 1e9} GHz \n')
+        self_resonance_freq = f'!The self-resonance frequency is {freq_at_min / 1e9} GHz\n'
         print(f'Self-resonance frequency of {snp_file} is {freq_at_min / 1e9} GHz')
     else:
-        contents.insert(line_number, f'!No self-resonance frequency found within the frequency range\n')
-        print(f'!No self-resonance frequency found within the frequency range')
-    with open(snp_file, "w") as f:
-        contents = "".join(contents)
-        f.write(contents)
+        self_resonance_freq = '!No self-resonance frequency found within the frequency range\n'
+        print('No self-resonance frequency found within the frequency range')
+    with open(snp_file, "r+") as f:
+        lines = f.readlines()
+        lines.insert(line_number, self_resonance_freq)
+        f.seek(0)
+        f.writelines(lines)
 
 
 def remove_line(snp_file, line_number):
-    """
-
-    :param snp_file: snp file full path
-    :param line_number: line number at which a new line is inserted, if -1 remove all comment lines
-    :return: Non
-    """
     if line_number != -1:
-        with open(snp_file, "r") as f:
+        with open(snp_file, "r+") as f:
             contents = f.readlines()
-            contents.pop(line_number)
-        with open(snp_file, "w") as f:
-            contents = "".join(contents)
-            f.write(contents)
+            f.seek(0)
+            f.truncate()
+            for i, line in enumerate(contents):
+                if i != line_number:
+                    f.write(line)
     else:
-        with open(snp_file, "r") as f:
+        with open(snp_file, "r+") as f:
             contents = f.readlines()
-            line_number = 0
-            while contents[line_number][0] == '!':
-                contents.pop(line_number)
-
-        with open(snp_file, "w") as f:
-            contents = "".join(contents)
-            f.write(contents)
+            f.seek(0)
+            f.truncate()
+            for line in contents:
+                if not line.startswith('!'):
+                    f.write(line)
 
 
 def shunt2series(s2p_file, dest_path):
@@ -197,6 +189,7 @@ if __name__ == '__main__':
     print("3. 并联s2p文件转换为串联s2p文件")
     print("4. s2p文件级联")
     print("5. snp文件作图")
+    print("6. 失配分析")
     print('=========================================')
     selection = input("请输入你的选择：")
     root = tk.Tk()
@@ -277,3 +270,44 @@ if __name__ == '__main__':
         plt.figure()
         snp_data.plot_s_deg()
         plt.show(block=True)
+    elif selection == '6':
+        isDone = "n"
+        while isDone == 'n':
+            print("==========================Mismatch loss analysis=============================")
+            source_impedance = input("Please input the source impedance using format: R+Xj\n")
+            # R = float(source_impedance.split(',')[0])
+            # X = float(source_impedance.split(',')[1])
+            Zs = complex(source_impedance)
+            if np.real(Zs) < 0:
+                sys.exit("Wrong numbers was entered please try again")
+            reflection = (Zs - 50) / (Zs + 50)
+            reflection_phase_in_rad = round(np.angle(reflection) / np.pi, 2)
+            # print(f"The reflection phase of source impedance is {reflection_phase_in_rad}Π")
+            # print(f"The return loss is {round(-20 * np.log10(abs(reflection)), 2)}dB")
+            # print(f"the mismatch loss is {round(-10 * np.log10(1 - abs(reflection) ** 2), 2)}dB")
+            print("--------------------------------------------------------------------------------------")
+            load_reflection_dB = float(input("Please input the load reflection coefficient in dB:\n"))
+            load_reflection_abs = 10 ** (load_reflection_dB / 20)
+            load_phase_in_rad = np.array([i for i in np.arange(-np.pi, np.pi, np.pi / 2000)])
+            load_reflection = load_reflection_abs * np.exp(1j * load_phase_in_rad)
+            Zl = 50 * (1 + load_reflection) / (1 - load_reflection)
+            mismatch_loss = -10 * np.log10(1 - abs((Zl - np.conjugate(Zs)) / (Zl + Zs)) ** 2)
+            return_loss_load = -20 * np.log10(abs((Zl - np.conjugate(Zs)) / (Zl + Zs)))
+            # print(round(mismatch_loss))
+            index = np.argmax(mismatch_loss)
+            # print(f"The maximum mismatch loss of {round(mismatch_loss[index])}dB reaches at Z={np.round(Zl[index],2)}"
+            #       f" with reflection angle of {round(load_phase_in_rad[index],2)}Π")
+            print("--------------------------------------------------------------------------------------")
+            print(f"source impedance {np.round(Zs, 2)} ")
+            print(f"Return loss from source impedance to 50 ohm: {round(-20 * np.log10(abs(reflection)), 2)}dB")
+            print(f"Reflection coefficient angle of source impedance: {reflection_phase_in_rad}Π")
+            print(
+                f"Mismatch loss from source impedance to 50 ohm:  {round(-10 * np.log10(1 - abs(reflection) ** 2), 2)}dB")
+            print("--------------------------------------------------------------------------------------")
+            print(f"The load impedance where the maximum mismatch loss occurs is: {np.round(Zl[index], 2)}")
+            print(f"Return loss from source impedance to load impedance:  {round(return_loss_load[index], 2)}dB")
+            print(f"Reflection coefficient angle of load impedance: {round(load_phase_in_rad[index] / np.pi, 2)}Π")
+            print(f"Mismatch loss from source impedance to load impedance: {round(mismatch_loss[index], 2)}dB")
+            print("--------------------------------------------------------------------------------------")
+            isDone = input("Exit the program? y for Yes and n for No:")
+
