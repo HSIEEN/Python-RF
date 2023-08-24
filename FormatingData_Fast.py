@@ -8,7 +8,7 @@
 import xlwings as xw
 # import glob
 import copy
-import time
+# import time
 import math
 import numpy as np
 import pandas as pd
@@ -57,7 +57,7 @@ def gain_value_ini(dict_name, freq):
     elif freq == 'l5':
         keys = ['1160MHz', '1180MHz', '1190MHz']
     for key in keys:
-        for i in range(0, 5):
+        for i in range(0, 6):
             dict_name[key][theta_list[i]] = 0
 
 
@@ -69,7 +69,8 @@ def effi_value(xls_sheet, effi_name, freq):
     else:  # read BT effi data
         effi_name[freq] = xls_sheet.range('B8:B28').value
         effi_name[freq] += [xls_sheet.range('B34').value, xls_sheet.range('B35').value]
-        xls_sheet.range('A13:AC21').color = (255, 255, 0)
+        effi_name[freq] += [(xls_sheet.range('R38').value+xls_sheet.range('R39').value+xls_sheet.range('R40').value)/3]
+        xls_sheet.range('A13:AD21').color = (255, 255, 0)
 
 
 def gain_chara_coloring(filename, xls_sheet):
@@ -85,6 +86,7 @@ def gain_chara_coloring(filename, xls_sheet):
     ]
     sheet_name = xls_sheet.name
     if 'L1-' in sheet_name or 'L5-' in sheet_name:
+        # df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
         df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
         df.index = pd.Index(list(i for i in range(29, len(df) + 29)))
         # print(len(df.index))
@@ -154,7 +156,7 @@ def gain_chara_coloring(filename, xls_sheet):
             xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
 
 
-def get_data(filename):
+def get_data(filename, wb):
     effi_list = []
     effi_data = {
         'l1': effi_list,
@@ -175,7 +177,7 @@ def get_data(filename):
     dut_gain.clear()
     # dut_gain = {}
     # dut_name = []
-    wb = app.books.open(filename)
+    # wb = xw.Book(filename)
     # app = xw.App()
     # wb = xw.Book(filename)
     gps_sheets = [i for i in wb.sheet_names if ('L1-' in i or 'L5-' in i)]
@@ -214,12 +216,12 @@ def get_data(filename):
         dut_gain[dut] = copy.deepcopy(gain_data)
 
     # Coloring gain and characteristic data
-    for sheet in gps_sheets+bt_sheets:
+    for sheet in gps_sheets + bt_sheets:
         gain_chara_coloring(filename, wb.sheets[sheet])
 
     # wb.save()
 
-    return wb
+    # return wb
 
 
 def write_data(wb):
@@ -233,6 +235,9 @@ def write_data(wb):
     ws.range('A15:J100').api.Font.Bold = True
     ws.range('I15:I100').api.Font.ColorIndex = 3
     ws.range('I15:I100').api.NumberFormat = "0.0"
+    ws.range('M72:Z72').api.NumberFormat = "0.0"
+    ws.range('M72:Z72').api.Font.ColorIndex = 3
+    ws.range('M72:Z72').api.HorizontalAlignment = -4108
     # print(ws)
     ws.range('A15:J100').value = ''
     ws.range('A15:J100').color = (255, 255, 255)
@@ -245,38 +250,48 @@ def write_data(wb):
     # theta_col = {'30°': 'C', '45°': 'D', '60°': 'E', '90°': 'F', '120°': 'G', 'd30': 'H', 'd60': 'I', 'd90': 'J'}
     theta_col = {'30°': 'C', '45°': 'D', '60°': 'E', '90°': 'F', '120°': 'G', 'dist': 'I'}
     # record if there are L5 data, no in default.
-    # n = 3 means 3 frequencies in L5 Band won't be written in Excel rows
-    n = 3
-    # m is the number of DUT without gain data
-    m = 0
+    # min_freq_index
+    min_freq_index = 3
+    # dut_omitted is the number of DUT without gain data
+    dut_omitted = 0
+    max_freq_index = 3
     for dut in dut_list:
-        # if there are L5 gain data, no data row will be ignored in Excel
+        # there is l5
         if dut_gain[dut][freq_list[0]][theta_list[0]] != 0:
-            n = 0
-        if dut_gain[dut][freq_list[3]][theta_list[0]] == 0:
-            m = m + 1
-    # write data
-    for i in range(n, 6):
-        ws.range('A' + (str(15 + (len(dut_list) - m) * (i - n)))).value = freq_list[i]
-        # print(str('A' + str(15 + len(dut_list) * i)+':'+'A' + str(15 + len(dut_list) * i+len(dut_list))))
-        ws.range(
-            'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
-            'A' + str(15 + (len(dut_list) - m) * (i - n) + (len(dut_list) - m) - 1),
-            'A' + str(15 + (len(dut_list) - m) * (i - n)) + ':' +
-            'J' + str(15 + (len(dut_list) - m) * (i - n))).color = freq_color[
-            i]
-        # k= 0  # the number of line to be ignored
-        k = 0
-        for j in range(0, len(dut_list)):
-            if dut_gain[dut_list[j]][freq_list[0]][theta_list[0]] != 0 or \
-                    dut_gain[dut_list[j]][freq_list[3]][theta_list[0]] != 0:
-                ws.range('B' + str(15 + (len(dut_list) - m) * (i - n) + j - k)).value = dut_list[j]
-                # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
-                for theta in theta_list:
-                    ws.range(theta_col[theta] + str(15 + (len(dut_list) - m) * (i - n) + j - k)).value = \
-                        round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
-            else:
-                k = k + 1
+            min_freq_index = 0
+        # no l1 and l5
+        if dut_gain[dut][freq_list[3]][theta_list[0]] == 0 and dut_gain[dut][freq_list[0]][theta_list[0]] == 0:
+            dut_omitted = dut_omitted + 1
+        # there is l1
+        if dut_gain[dut][freq_list[3]][theta_list[0]] != 0:
+            max_freq_index = 6
+    # write gain data
+    if len(dut_list) - dut_omitted > 0:
+        for i in range(min_freq_index, max_freq_index):
+            ws.range('A' + (str(15 + (len(dut_list) - dut_omitted) * (i - min_freq_index)))).value = freq_list[i]
+            # print(str('A' + str(15 + len(dut_list) * i)+':'+'A' + str(15 + len(dut_list) * i+len(dut_list))))
+            ws.range(
+                'A' + str(15 + (len(dut_list) - dut_omitted) * (i - min_freq_index)) + ':' +
+                'A' + str(
+                    15 + (len(dut_list) - dut_omitted) * (i - min_freq_index) + (len(dut_list) - dut_omitted) - 1),
+                'A' + str(15 + (len(dut_list) - dut_omitted) * (i - min_freq_index)) + ':' +
+                'J' + str(15 + (len(dut_list) - dut_omitted) * (i - min_freq_index))).color = freq_color[
+                i]
+            # k= 0  # the number of line to be ignored
+            k = 0
+            for j in range(0, len(dut_list)):
+                if dut_gain[dut_list[j]][freq_list[0]][theta_list[0]] != 0 or \
+                        dut_gain[dut_list[j]][freq_list[3]][theta_list[0]] != 0:
+                    ws.range('B' + str(15 + (len(dut_list) - dut_omitted) * (i - min_freq_index) + j - k)).value = \
+                        dut_list[j]
+                    # ws.range('B' + str(15 + len(dut_list) * i + j)).color = (255, 255, 204)
+                    for theta in theta_list:
+                        ws.range(
+                            theta_col[theta] + str(15 + (len(dut_list)
+                                                         - dut_omitted) * (i - min_freq_index) + j - k)).value = \
+                            round(dut_gain[dut_list[j]][freq_list[i]][theta], 2)
+                else:
+                    k = k + 1
 
     # write efficiency data
     ws.range('M2:Z71').value = ''
@@ -306,28 +321,24 @@ def write_data(wb):
     # xw.App().kill()
 
 
-if __name__ == "__main__":
+def formatting_data(file, wb):
     # if_exit = 'Y'
     # while if_exit != 'N' and if_exit != 'n' and (if_exit == 'Y' or if_exit == 'y'):
-    root = tk.Tk()
-    root.withdraw()
-    print('---------Format antenna gain data_version 6.3-----------')
-    print('-----------All rights are reserved by COROS------------')
+    # root = tk.Tk()
+    # root.withdraw()
+    # print('---------Format antenna gain data_version 6.3-----------')
+    # print('-----------All rights are reserved by COROS------------')
     # 'file_or_directory = input('============请选择文件=============')
-    print('*****************请选择一个文件******************')
-    file = filedialog.askopenfile()
+    # print('*****************请选择一个文件******************')
+    # file = filedialog.askopenfile()
     # name = file.name
-    if not file:
-        sys.exit("******未选择任何文件，自动退出程序！！！******")
-    print('文件 %s 处理中，请稍后......' % file.name)
-    try:
-        app = xw.App(visible=True, add_book=False)
-        app.display_alerts = True
-        app.screen_updating = True
-        start_time = time.perf_counter()
-        wb = get_data(file.name)
-        write_data(wb)
-    except:
-        print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
-    print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-    time.sleep(5)
+    # try:
+    # app = xw.App(visible=True, add_book=False)
+    # app.display_alerts = True
+    # app.screen_updating = True
+
+    get_data(file, wb)
+    write_data(wb)
+    wb.save()
+    # except:
+    # print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
