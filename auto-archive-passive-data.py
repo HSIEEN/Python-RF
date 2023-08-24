@@ -221,6 +221,7 @@ def copy_data(files, target_file):
         if '-' in sheet.name:
             sheet.name = sheet.name.split('-')[0] + '-' + target_file.split('/')[-1].split('.')[0]
     # return wb
+    time.sleep(1.5)
     wb.save()
     return wb
     # wb.close()
@@ -238,14 +239,19 @@ def merge_files(files, target_file):
             # if wbs contains only one data set
             if 'L1-' in ssheet.name:
                 ssheet.copy(after=wb.sheets['L1-FS'], name=ssheet.name)
+                time.sleep(0.5)
             elif 'L5-' in ssheet.name:
                 ssheet.copy(after=wb.sheets['L5-FS'], name=ssheet.name)
+                time.sleep(0.5)
             elif 'BT-' in ssheet.name:
                 ssheet.copy(after=wb.sheets['BT-FS'], name=ssheet.name)
+                time.sleep(0.5)
         wbs.close()
+        time.sleep(1.5)
     for tsheet in wb.sheets:
         if 'FS' in tsheet.name:
             tsheet.delete()
+    # os.wait(1)
     wb.save()
     return wb
 
