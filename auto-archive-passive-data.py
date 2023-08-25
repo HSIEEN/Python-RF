@@ -53,6 +53,8 @@ def copy_data(files, target_file):
                                       index=False, header=False, startrow=56, startcol=1)
                 BT_gain_2480.to_excel(writer, sheet_name='BT-FS', columns=list(str(i) for i in range(1, 13)),
                                       index=False, header=False, startrow=74, startcol=1)
+                time.sleep(0.5)
+                os.remove(file)
         elif 'LP.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
@@ -67,6 +69,8 @@ def copy_data(files, target_file):
                                      index=False, header=False, startrow=2, startcol=0)
                 GPS_l5_effi.to_excel(writer, sheet_name='L5-FS', columns=list(str(i) for i in range(0, 29)),
                                      index=False, header=False, startrow=2, startcol=0)
+            time.sleep(0.5)
+            os.remove(file)
         elif 'CP.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
@@ -121,6 +125,8 @@ def copy_data(files, target_file):
                                         index=False, header=False, startrow=128, startcol=1)
                 GPS_gain_1610l.to_excel(writer, sheet_name='L1-FS', columns=list(str(i) for i in range(1, 13)),
                                         index=False, header=False, startrow=145, startcol=1)
+            time.sleep(0.5)
+            os.remove(file)
         elif 'L5.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
@@ -130,6 +136,8 @@ def copy_data(files, target_file):
             with pd.ExcelWriter(target_file, mode='a', if_sheet_exists='overlay', engine="openpyxl") as writer:
                 GPS_l5_effi.to_excel(writer, sheet_name='L5-FS', columns=list(str(i) for i in range(0, 29)),
                                      index=False, header=False, startrow=2, startcol=0)
+            time.sleep(0.5)
+            os.remove(file)
         elif 'C5.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
@@ -159,6 +167,8 @@ def copy_data(files, target_file):
                                         index=False, header=False, startrow=128, startcol=1)
                 GPS_gain_1190l.to_excel(writer, sheet_name='L5-FS', columns=list(str(i) for i in range(1, 13)),
                                         index=False, header=False, startrow=145, startcol=1)
+            time.sleep(0.5)
+            os.remove(file)
         elif 'L1.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
@@ -168,6 +178,8 @@ def copy_data(files, target_file):
             with pd.ExcelWriter(target_file, mode='a', if_sheet_exists='overlay', engine="openpyxl") as writer:
                 GPS_l1_effi.to_excel(writer, sheet_name='L1-FS', columns=list(str(i) for i in range(0, 29)),
                                      index=False, header=False, startrow=2, startcol=0)
+            time.sleep(0.5)
+            os.remove(file)
         elif 'C1.xlsx' == file[-7:]:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
@@ -197,7 +209,8 @@ def copy_data(files, target_file):
                                         index=False, header=False, startrow=128, startcol=1)
                 GPS_gain_1610l.to_excel(writer, sheet_name='L1-FS', columns=list(str(i) for i in range(1, 13)),
                                         index=False, header=False, startrow=145, startcol=1)
-
+            time.sleep(0.5)
+            os.remove(file)
     # delete sheet without data
     wb = xw.Book(target_file)
     if 'BT' not in file_str:
@@ -229,12 +242,15 @@ def copy_data(files, target_file):
 
 
 def merge_files(files, target_file):
-    # target file
+    # Determine whether source files intersect with each other.
+    # if yes, delete the sheets
     wb = xw.Book(target_file)
+    time.sleep(1)
+    # when the target file is among source files, there is no sheets called '*-FS' and it's possible to have a
     for file in files:
-        file_name = file.split('\\')[1].split('.')[0]
         # source file
         wbs = xw.Book(file)
+        time.sleep(0.5)
         for ssheet in wbs.sheets:
             # if wbs contains only one data set
             if 'L1-' in ssheet.name:
@@ -257,84 +273,119 @@ def merge_files(files, target_file):
 
 
 if __name__ == '__main__':
-    print("****************使用指南************************")
-    print("     1. 所有测试请选择标准模板")
-    print("     2. 蓝牙测试数据请导出为BT.xlsx文件")
-    print("     3. 双频GPS线极化测试数据请导出为LP.xlsx")
-    print("     4. 双频GPS圆极化极化测试数据请导出为CP.xlsx")
-    print("     5. L1线极化测试数据请导出为L1.xlsx")
-    print("     6. L1圆极化测试数据请导出为C1.xlsx")
-    print("     7. L5线极化测试数据请导出为L5.xlsx")
-    print("     8. L5圆极化测试数据请导出为C5.xlsx")
-    print("****************************************************")
-    print("!!!=================请选择一个功能=================!!!!")
-    print("     1. 读取测试数据并将格式化数据写入xlsx文件")
-    print("     2. 合并格式化数据到一个xlsx文件")
-    print("     3. 数据评分")
-    print('=========================================')
-    selection = input("请输入你的选择：")
-    root = tk.Tk()
-    root.withdraw()
-    if selection == '1':
-        print("============1. 读取测试数据并将格式化数据写入xlsx文件============")
-        print('************请选择一个源文件目录(内有包含GPS或者BT数据的xlsx文件)***************')
-        source_file_path = filedialog.askdirectory(title='打开测试数据目录')
+    selection = '0'
+    while selection != '4':
+        print("****************使用指南************************")
+        print("     1. 所有测试请选择标准模板")
+        print("     2. 蓝牙测试数据请导出为BT.xlsx文件")
+        print("     3. 双频GPS线极化测试数据请导出为LP.xlsx")
+        print("     4. 双频GPS圆极化极化测试数据请导出为CP.xlsx")
+        print("     5. L1线极化测试数据请导出为L1.xlsx")
+        print("     6. L1圆极化测试数据请导出为C1.xlsx")
+        print("     7. L5线极化测试数据请导出为L5.xlsx")
+        print("     8. L5圆极化测试数据请导出为C5.xlsx")
+        print("****************************************************")
+        print("!!!=================请选择一个功能=================!!!!")
+        print("     1. 读取测试数据并将格式化数据写入xlsx文件")
+        print("     2. 合并格式化数据到一个xlsx文件")
+        print("     3. 数据评分")
+        print("     4. 退出程序")
+        print('=========================================')
+        selection = input("请输入你的选择：")
+        root = tk.Tk()
+        root.withdraw()
+        if selection == '1':
+            print("============1. 读取测试数据并将格式化数据写入xlsx文件============")
+            print('************请选择一个源文件目录(内有包含GPS或者BT数据的xlsx文件)***************')
+            source_file_path = filedialog.askdirectory(title='打开测试数据目录')
 
-        print(f"源文件目录为 {source_file_path}")
-        excel_name = input("========请输入xlsx名称========\n")
-        while excel_name == '':
-            print('名称为空，请再次输入xlsx名称')
+            print(f"源文件目录为 {source_file_path}")
             excel_name = input("========请输入xlsx名称========\n")
-        start_time = time.perf_counter()
-        print('     数据归档进行中...')
-        target_file = f'{source_file_path}/{excel_name}.xlsx'
-        # os.popen(f'//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.0.xlsx'
-        # f' {source_file_path}/{sheet_name}.xlsx')
-        shutil.copyfile('//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
-                        target_file)
-        files = glob.glob(source_file_path + r"/*.xlsx")
-        files.remove(f'{source_file_path}\\{excel_name}.xlsx')
-        wb = copy_data(files, target_file)
-        print('     数据归档完成')
-        print('     数据评分中...')
-        formatting_data(target_file, wb)
-        print('     数据评分完成')
-        print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-    elif selection == '2':
-        print("============2. 合并格式化数据并写入xlsx文件=============")
-        print('************请选择一个源文件目录***************')
-        source_file_path = filedialog.askdirectory(title='打开源文件目录')
-        print(f"源文件目录为 {source_file_path}")
-        # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
-        excel_name = input("========请输入汇总后的文件名称========\n")
-        while excel_name == '':
-            print('名称为空，请再次输入xlsx名称')
-            excel_name = input("========请输入xlsx名称========\n")
-        start_time = time.perf_counter()
-        print('     文件合并中...')
-        target_file = f'{source_file_path}/{excel_name}.xlsx'
-        # os.popen(f'//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.0.xlsx'
-        # f' {source_file_path}/{sheet_name}.xlsx')
-        shutil.copyfile('//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
-                        target_file)
-        # dest_path = r"\\nas.local\DATA\Wireless\Library\Components\for test\Shunt\\"
-        files = glob.glob(source_file_path + r"/*.xlsx")
-        files.remove(f'{source_file_path}\\{excel_name}.xlsx')
-        wb = merge_files(files, target_file)
-        print('     文件合并完成')
-        print('     数据评分中...')
-        formatting_data(target_file, wb)
-        print('     数据评分完成')
-        print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
-    elif selection == '3':
-        print("============3. 数据评分=============")
-        print('************请选择一个文件***************')
-        source_file = filedialog.askopenfilename(title='选定一个源文件')
-        print(f"源文件为 {source_file}")
-        # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
-        start_time = time.perf_counter()
-        wb = xw.Book(source_file)
-        print('     数据评分中...')
-        formatting_data(source_file, wb)
-        print('     数据评分完成')
-        print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+            while excel_name == '':
+                print('名称为空，请再次输入xlsx名称')
+                excel_name = input("========请输入xlsx名称========\n")
+            start_time = time.perf_counter()
+            print('     数据归档进行中...')
+            target_file = f'{source_file_path}/{excel_name}.xlsx'
+            # os.popen(f'//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.0.xlsx'
+            # f' {source_file_path}/{sheet_name}.xlsx')
+            try:
+                shutil.copyfile(
+                    '//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
+                    target_file)
+            except:
+                shutil.copyfile(
+                    '//10.0.0.5/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
+                    target_file)
+            time.sleep(0.5)
+            files = glob.glob(source_file_path + r"/*.xlsx")
+            files.remove(f'{source_file_path}\\{excel_name}.xlsx')
+            wb = copy_data(files, target_file)
+            print('     数据归档完成')
+            print('     数据评分中...')
+            formatting_data(target_file, wb)
+            print('     数据评分完成')
+            print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        elif selection == '2':
+            print("============2. 合并格式化数据并写入xlsx文件=============")
+            print('************请选择一个或多个源文件**************')
+            # source_file_path = filedialog.askdirectory(title='打开源文件目录')
+            source_files = filedialog.askopenfilenames(title='选择源文件（可多选）')
+            while len(source_files) == 0:
+                print('未选择任何文件，请再次选择源文件')
+                source_files = filedialog.askopenfilenames(title='选择源文件（可多选）')
+            source_file_path = os.path.dirname(source_files[0])
+            print(f"源文件目录为 {source_file_path}")
+            # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
+            excel_name = input("========请输入汇总后的文件名称========\n")
+            while excel_name == '':
+                print('名称为空，请再次输入xlsx名称')
+                excel_name = input("========请输入xlsx名称========\n")
+            # estimate whether a file in the directory has a same name as excel_name
+            target_file = f'{source_file_path}/{excel_name}.xlsx'
+            # files = glob.glob(source_file_path + r"/*.xlsx")
+            start_time = time.perf_counter()
+            target_file_name = target_file.replace(os.path.dirname(target_file) + '/', '').split('.')[0]
+            renamed_source_file_name = target_file_name + '_old'
+            if target_file in source_files:
+                print('excel_name与现有文件重名，现有文件将会被重命名为*_old.xlsx')
+                # rename the source with the same name as the target file
+                os.rename(target_file, target_file.replace(target_file_name, renamed_source_file_name))
+                source_files = [source_file.replace(
+                    target_file, target_file.replace(target_file_name, renamed_source_file_name))
+                    for source_file in source_files]
+            print('     文件合并中...')
+            # os.popen(f'//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.0.xlsx'
+            # f' {source_file_path}/{sheet_name}.xlsx')
+            try:
+                shutil.copyfile(
+                    '//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
+                    target_file)
+            except:
+                shutil.copyfile(
+                    '//10.0.0.5/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.2.xlsx',
+                    target_file)
+            time.sleep(0.5)
+            # dest_path = r"\\nas.local\DATA\Wireless\Library\Components\for test\Shunt\\"
+            # files = glob.glob(source_file_path + r"/*.xlsx")
+            # files.remove(f'{source_file_path}\\{excel_name}.xlsx')
+            wb = merge_files(source_files, target_file)
+            print('     文件合并完成')
+            print('     数据评分中...')
+            formatting_data(target_file, wb)
+            print('     数据评分完成')
+            print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        elif selection == '3':
+            print("============3. 数据评分=============")
+            print('************请选择一个文件***************')
+            source_file = filedialog.askopenfilename(title='选定一个源文件')
+            print(f"源文件为 {source_file}")
+            # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
+            start_time = time.perf_counter()
+            wb = xw.Book(source_file)
+            print('     数据评分中...')
+            formatting_data(source_file, wb)
+            print('     数据评分完成')
+            print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        elif selection == '4':
+            sys.exit('Exit the program，have a good day')
