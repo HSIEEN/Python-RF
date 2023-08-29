@@ -78,7 +78,8 @@ def copy_data(files, target_file):
             GPS_gain_1160r.columns = columns
             GPS_gain_1160l = df.loc[list(i for i in range(908, 922))]
             GPS_gain_1160l.columns = columns
-            GPS_gain_1180r = df.loc[list(i for i in range(993, 107))]
+            time.sleep(0.2)
+            GPS_gain_1180r = df.loc[list(i for i in range(993, 1007))]
             GPS_gain_1180r.columns = columns
             GPS_gain_1180l = df.loc[list(i for i in range(1010, 1024))]
             GPS_gain_1180l.columns = columns
@@ -274,10 +275,11 @@ def merge_files(files, target_file):
 
 if __name__ == '__main__':
     selection = '0'
-    while selection != '4':
-        print('******Antenna Passive Test Data Automation Archiving Tool******')
+    while selection != '5':
+        print('><<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>')
+        print('       Antenna Passive Test Data Automation Archiving Tool      ')
         print('**************All rights are reserved by COROS******************')
-        print("-------------------------使用指南--------------------------------")
+        print("----------------------使用指南-----------------------------------")
         print("         1. 所有测试请选择标准模板")
         print("         2. 蓝牙测试数据请导出为BT.xlsx文件")
         print("         3. 双频GPS线极化测试数据请导出为LP.xlsx")
@@ -287,11 +289,12 @@ if __name__ == '__main__':
         print("         7. L5线极化测试数据请导出为L5.xlsx")
         print("         8. L5圆极化测试数据请导出为C5.xlsx")
         print("---------------------------------------------------------------")
-        print("-----------------------请选择一个功能----------------------------")
+        print("-------------------请选择一个功能-----------------------------")
         print("         1. 读取测试数据并将格式化数据写入xlsx文件")
         print("         2. 合并格式化数据到一个xlsx文件")
         print("         3. 数据评分")
-        print("         4. 退出程序")
+        print("         4. 重命名文件")
+        print("         5. 退出程序")
         print('===============================================================')
         selection = input("请输入你的选择：")
         root = tk.Tk()
@@ -384,6 +387,9 @@ if __name__ == '__main__':
             print("========================3. 数据评分==============================")
             print('***********************请选择一个文件*****************************')
             source_file = filedialog.askopenfilename(title='选定一个源文件')
+            while source_file == '':
+                print('      未选择任何文件，请重新选择')
+                source_file = filedialog.askopenfilename(title='选定一个源文件')
             print(f"源文件为 {source_file}")
             # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
             start_time = time.perf_counter()
@@ -393,5 +399,29 @@ if __name__ == '__main__':
             print('     数据评分完成')
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
         elif selection == '4':
+            print("****************************************************************")
+            print("========================4. 重命名文件==============================")
+            print('***********************请选择一个文件*****************************')
+            source_file = filedialog.askopenfilename(title='选定一个源文件')
+            while source_file == '':
+                print('      未选择任何文件，请重新选择')
+                source_file = filedialog.askopenfilename(title='选定一个源文件')
+            print(f"源文件为 {source_file}")
+            source_file_name = source_file.replace(os.path.dirname(source_file) + '/', '').split('.')[0]
+            # source_file_path = os.path.dirname(source_file)
+            # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
+            # start_time = time.perf_counter()
+            # wb = xw.Book(source_file)
+            excel_name = input("==========请为所选文件输入一个新名字============\n")
+            while excel_name == '':
+                # print('名称为空，请再次输入xlsx名称')
+                excel_name = input("==========请为所选文件输入一个新名字============\n")
+            os.rename(source_file, source_file.replace(source_file_name, excel_name))
+
+            print('     重命名成功')
+            # formatting_data(source_file, wb)
+            # print('     数据评分完成')
+            # print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+        elif selection == '5':
             print("***************************************************************")
             sys.exit('Exit the program，have a good day')
