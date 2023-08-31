@@ -218,19 +218,19 @@ def copy_data(files, target_file):
     wb = xw.Book(target_file)
     if 'BT.xlsx' not in file_list:
         for sheet in wb.sheets:
-            if 'BT.xlsx' in sheet.name:
+            if 'BT-' in sheet.name:
                 sheet.delete()
     if ('C1.xlsx' not in file_list) and ('C5.xlsx' not in file_list) and ('CP.xlsx' not in file_list):
         for sheet in wb.sheets:
-            if 'L1.xlsx' in sheet.name or 'L5.xlsx' in sheet.name:
+            if 'L1-' in sheet.name or 'L5-' in sheet.name:
                 sheet.delete()
     if ('C1.xlsx' in file_list) and ('C5.xlsx' not in file_list):
         for sheet in wb.sheets:
-            if 'L5.xlsx' in sheet.name:
+            if 'L5-' in sheet.name:
                 sheet.delete()
     if ('C1.xlsx' not in file_list) and ('C5.xlsx' in file_list):
         for sheet in wb.sheets:
-            if 'L1.xlsx' in sheet.name:
+            if 'L1-' in sheet.name:
                 sheet.delete()
     # rename sheets
     for sheet in wb.sheets:
@@ -293,7 +293,7 @@ if __name__ == '__main__':
         print("---------------------------------------------------------------")
         print("-------------------请选择一个功能-----------------------------")
         print("         1. 将导出的测试数据格式化写入到一个xlsx文件中")
-        print("         2. 合并格式化数据到一个xlsx文件")
+        print("         2. 合并多个xlsx文件")
         print("         3. 数据评分")
         print("         4. 重命名文件")
         print("         5. 退出程序")
@@ -336,7 +336,7 @@ if __name__ == '__main__':
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
         elif selection == '2':
             print("***********************************************************")
-            print("===============2. 合并格式化数据并写入xlsx文件==================")
+            print("================2. 合并多个xlsx文件 =======================")
             print('********************请选择一个或多个源文件********************')
             # source_file_path = filedialog.askdirectory(title='打开源文件目录')
             source_files = filedialog.askopenfilenames(title='选择源文件（可多选）')
@@ -354,14 +354,14 @@ if __name__ == '__main__':
             target_file = f'{source_file_path}/{excel_name}.xlsx'
             # files = glob.glob(source_file_path + r"/*.xlsx")
             start_time = time.perf_counter()
-            target_file_name = target_file.replace(os.path.dirname(target_file) + '/', '').split('.')[0]
-            renamed_source_file_name = target_file_name + '_old'
+            # target_file_name = target_file.replace(os.path.dirname(target_file) + '/', '').split('.')[0]
+            renamed_source_file_name = excel_name + '_old'
             if target_file in source_files:
                 print('excel_name与现有文件重名，现有文件将会被重命名为*_old.xlsx')
                 # rename the source with the same name as the target file
-                os.rename(target_file, target_file.replace(target_file_name, renamed_source_file_name))
+                os.rename(target_file, target_file.replace(excel_name, renamed_source_file_name))
                 source_files = [source_file.replace(
-                    target_file, target_file.replace(target_file_name, renamed_source_file_name))
+                    target_file, target_file.replace(excel_name, renamed_source_file_name))
                     for source_file in source_files]
             print('     文件合并中...')
             # os.popen(f'//nas.local/DATA/Wireless/AntennaTest/Templates/Antenna passive test templates V7.0.xlsx'
@@ -384,6 +384,7 @@ if __name__ == '__main__':
             formatting_data(target_file, wb)
             print('     数据评分完成')
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+
         elif selection == '3':
             print("****************************************************************")
             print("========================3. 数据评分==============================")
