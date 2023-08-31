@@ -16,21 +16,23 @@ import time
 
 def copy_data(files, target_file):
     # delete sheet without data
-    file_str = ''
+    file_list = []
     for file in files:
-        file_str += file[-7:-5]
-    if ('BT' not in file_str) and ('CP' in file_str) and ('LP' not in file_str):
+        if '$' not in file:
+            file_list.append(file.replace(os.path.dirname(file) + '\\', ''))
+    if ('BT.xlsx' not in file_list) and ('CP.xlsx' in file_list) and ('LP.xlsx' not in file_list):
         sys.exit("      数据不完整，请补充数据！")
-    if ('BT' not in file_str) and ('L1' in file_str) and ('C1' not in file_str):
+    if ('BT.xlsx' not in file_list) and ('L1.xlsx' in file_list) and ('C1.xlsx' not in file_list):
         sys.exit("      数据不完整，请补充数据！")
-    if ('BT' not in file_str) and ('L5' in file_str) and ('C5' not in file_str):
+    if ('BT.xlsx' not in file_list) and ('L5.xlsx' in file_list) and ('C5.xlsx' not in file_list):
         sys.exit("      数据不完整，请补充数据！")
-    if not (('BT' in file_str) or ('CP' in file_str) or ('C1' in file_str) or ('C5' in file_str)):
+    if not (('BT.xlsx' in file_list) or ('CP.xlsx' in file_list) or ('C1.xlsx' in file_list) or ('C5.xlsx' in file_list)):
         sys.exit("      数据不完整，请补充数据！")
 
     for file in files:
+        file_name = file.replace(os.path.dirname(file) + '\\', '')
         # copy bluetooth data
-        if 'BT.xlsx' == file[-7:]:
+        if 'BT.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 30)))
             # frequency.to_excel(target_file, 'BT-FS',columns=[""])
             df = pd.read_excel(file, header=3, usecols='B:AE')
@@ -55,7 +57,7 @@ def copy_data(files, target_file):
                                       index=False, header=False, startrow=74, startcol=1)
                 time.sleep(0.5)
                 os.remove(file)
-        elif 'LP.xlsx' == file[-7:]:
+        elif 'LP.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
             GPS_l1_effi = df.loc[list(i for i in range(50, 71))]
@@ -71,7 +73,7 @@ def copy_data(files, target_file):
                                      index=False, header=False, startrow=2, startcol=0)
             time.sleep(0.5)
             os.remove(file)
-        elif 'CP.xlsx' == file[-7:]:
+        elif 'CP.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
             GPS_gain_1160r = df.loc[list(i for i in range(891, 905))]
@@ -128,7 +130,7 @@ def copy_data(files, target_file):
                                         index=False, header=False, startrow=145, startcol=1)
             time.sleep(0.5)
             os.remove(file)
-        elif 'L5.xlsx' == file[-7:]:
+        elif 'L5.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
             GPS_l5_effi = df.loc[list(i for i in range(0, 21))]
@@ -139,7 +141,7 @@ def copy_data(files, target_file):
                                      index=False, header=False, startrow=2, startcol=0)
             time.sleep(0.5)
             os.remove(file)
-        elif 'C5.xlsx' == file[-7:]:
+        elif 'C5.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
             GPS_gain_1160r = df.loc[list(i for i in range(331, 345))]
@@ -170,7 +172,7 @@ def copy_data(files, target_file):
                                         index=False, header=False, startrow=145, startcol=1)
             time.sleep(0.5)
             os.remove(file)
-        elif 'L1.xlsx' == file[-7:]:
+        elif 'L1.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 29)))
             df = pd.read_excel(file, header=3, usecols='B:AD')
             GPS_l1_effi = df.loc[list(i for i in range(0, 21))]
@@ -181,7 +183,7 @@ def copy_data(files, target_file):
                                      index=False, header=False, startrow=2, startcol=0)
             time.sleep(0.5)
             os.remove(file)
-        elif 'C1.xlsx' == file[-7:]:
+        elif 'C1.xlsx' == file_name:
             columns = pd.Index(list(str(i) for i in range(0, 26)))
             df = pd.read_excel(file, header=3, usecols='B:AA')
             GPS_gain_1560r = df.loc[list(i for i in range(331, 345))]
@@ -214,21 +216,21 @@ def copy_data(files, target_file):
             os.remove(file)
     # delete sheet without data
     wb = xw.Book(target_file)
-    if 'BT' not in file_str:
+    if 'BT.xlsx' not in file_list:
         for sheet in wb.sheets:
-            if 'BT' in sheet.name:
+            if 'BT.xlsx' in sheet.name:
                 sheet.delete()
-    if ('C1' not in file_str) and ('C5' not in file_str) and ('CP' not in file_str):
+    if ('C1.xlsx' not in file_list) and ('C5.xlsx' not in file_list) and ('CP.xlsx' not in file_list):
         for sheet in wb.sheets:
-            if 'L1' in sheet.name or 'L5' in sheet.name:
+            if 'L1.xlsx' in sheet.name or 'L5.xlsx' in sheet.name:
                 sheet.delete()
-    if ('C1' in file_str) and ('C5' not in file_str):
+    if ('C1.xlsx' in file_list) and ('C5.xlsx' not in file_list):
         for sheet in wb.sheets:
-            if 'L5' in sheet.name:
+            if 'L5.xlsx' in sheet.name:
                 sheet.delete()
-    if ('C1' not in file_str) and ('C5' in file_str):
+    if ('C1.xlsx' not in file_list) and ('C5.xlsx' in file_list):
         for sheet in wb.sheets:
-            if 'L1' in sheet.name:
+            if 'L1.xlsx' in sheet.name:
                 sheet.delete()
     # rename sheets
     for sheet in wb.sheets:
@@ -275,22 +277,22 @@ def merge_files(files, target_file):
 
 if __name__ == '__main__':
     selection = '0'
+    print('><<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>')
+    print('       Antenna Passive Test Data Automation Archiving Tool      ')
+    print('**************All rights are reserved by COROS******************')
+    print("----------------------使用指南-----------------------------------")
+    print("         1. 所有测试请选择标准模板")
+    print("         2. 蓝牙测试数据请导出为BT.xlsx文件")
+    print("         3. 双频GPS线极化测试数据请导出为LP.xlsx")
+    print("         4. 双频GPS圆极化测试数据请导出为CP.xlsx")
+    print("         5. L1线极化测试数据请导出为L1.xlsx")
+    print("         6. L1圆极化测试数据请导出为C1.xlsx")
+    print("         7. L5线极化测试数据请导出为L5.xlsx")
+    print("         8. L5圆极化测试数据请导出为C5.xlsx")
     while selection != '5':
-        print('><<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>')
-        print('       Antenna Passive Test Data Automation Archiving Tool      ')
-        print('**************All rights are reserved by COROS******************')
-        print("----------------------使用指南-----------------------------------")
-        print("         1. 所有测试请选择标准模板")
-        print("         2. 蓝牙测试数据请导出为BT.xlsx文件")
-        print("         3. 双频GPS线极化测试数据请导出为LP.xlsx")
-        print("         4. 双频GPS圆极化测试数据请导出为CP.xlsx")
-        print("         5. L1线极化测试数据请导出为L1.xlsx")
-        print("         6. L1圆极化测试数据请导出为C1.xlsx")
-        print("         7. L5线极化测试数据请导出为L5.xlsx")
-        print("         8. L5圆极化测试数据请导出为C5.xlsx")
         print("---------------------------------------------------------------")
         print("-------------------请选择一个功能-----------------------------")
-        print("         1. 读取测试数据并将格式化数据写入xlsx文件")
+        print("         1. 将导出的测试数据格式化写入到一个xlsx文件中")
         print("         2. 合并格式化数据到一个xlsx文件")
         print("         3. 数据评分")
         print("         4. 重命名文件")
@@ -301,7 +303,7 @@ if __name__ == '__main__':
         root.withdraw()
         if selection == '1':
             print("************************************************************")
-            print("============1. 读取测试数据并将格式化数据写入xlsx文件============")
+            print("============1. 将导出的测试数据格式化写入到一个xlsx文件中============")
             print('*******请选择一个源文件目录(内有包含GPS或者BT数据的xlsx文件)*******')
             source_file_path = filedialog.askdirectory(title='打开测试数据目录')
 
