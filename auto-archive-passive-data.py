@@ -21,13 +21,16 @@ def copy_data(files, target_file):
         if '$' not in file:
             file_list.append(file.replace(os.path.dirname(file) + '\\', ''))
     if ('BT.xlsx' not in file_list) and ('CP.xlsx' in file_list) and ('LP.xlsx' not in file_list):
-        sys.exit("      数据不完整，请补充数据！")
+        print("      数据不完整，请补充数据！")
+        return 0
     if ('BT.xlsx' not in file_list) and ('L1.xlsx' in file_list) and ('C1.xlsx' not in file_list):
-        sys.exit("      数据不完整，请补充数据！")
+        print("      数据不完整，请补充数据！")
+        return 0
     if ('BT.xlsx' not in file_list) and ('L5.xlsx' in file_list) and ('C5.xlsx' not in file_list):
-        sys.exit("      数据不完整，请补充数据！")
+        print("      数据不完整，请补充数据！")
     if not (('BT.xlsx' in file_list) or ('CP.xlsx' in file_list) or ('C1.xlsx' in file_list) or ('C5.xlsx' in file_list)):
-        sys.exit("      数据不完整，请补充数据！")
+        print("      数据不完整，请补充数据！")
+        return 0
 
     for file in files:
         file_name = file.replace(os.path.dirname(file) + '\\', '')
@@ -278,7 +281,7 @@ def merge_files(files, target_file):
 if __name__ == '__main__':
     selection = '0'
     print('><<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>')
-    print('       Antenna Passive Test Data Automation Archiving Tool      ')
+    print('     Antenna Passive Test Data Automation Archiving Tool V3.0    ')
     print('**************All rights are reserved by COROS******************')
     print("----------------------使用指南-----------------------------------")
     print("         1. 所有测试请选择标准模板")
@@ -329,6 +332,8 @@ if __name__ == '__main__':
             files = glob.glob(source_file_path + r"/*.xlsx")
             files.remove(f'{source_file_path}\\{excel_name}.xlsx')
             wb = copy_data(files, target_file)
+            if wb == 0:
+                continue
             print('     数据归档完成')
             print('     数据评分中...')
             formatting_data(target_file, wb)
