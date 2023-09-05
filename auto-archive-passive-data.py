@@ -2,7 +2,6 @@
 # Author: Shawn Shi
 # Right Reserved By COROS
 import sys
-
 from FormatingData_Fast import formatting_data
 import tkinter as tk
 import os
@@ -28,7 +27,8 @@ def copy_data(files, target_file):
         return 0
     if ('BT.xlsx' not in file_list) and ('L5.xlsx' in file_list) and ('C5.xlsx' not in file_list):
         print("      数据不完整，请补充数据！")
-    if not (('BT.xlsx' in file_list) or ('CP.xlsx' in file_list) or ('C1.xlsx' in file_list) or ('C5.xlsx' in file_list)):
+    if not (('BT.xlsx' in file_list) or ('CP.xlsx' in file_list) or ('C1.xlsx' in file_list) or (
+            'C5.xlsx' in file_list)):
         print("      数据不完整，请补充数据！")
         return 0
 
@@ -278,10 +278,28 @@ def merge_files(files, target_file):
     return wb
 
 
+def rename_sheet(file):
+    wb = xw.Book(file)
+    time.sleep(0.5)
+    sheets = wb.sheets
+    sheet_name_list = [sheet.name for sheet in sheets]
+    # In case that one more than sheet have are started with 'BT' or 'L1' or 'L5', stop this function
+    for element1 in sheet_name_list:
+        for element2 in sheet_name_list:
+            if element1[:3] == element2[:3] and element1 != element2:
+                print('     excel文件包含至少两个DUT数据，无法重命名')
+                return 0
+    for sheet in sheets:
+        if '-' in sheet.name:
+            sheet.name = sheet.name.split('-')[0] + '-' + file.split('/')[-1].split('.')[0]
+    wb.save()
+    return wb
+
+
 if __name__ == '__main__':
     selection = '0'
     print('><<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>')
-    print('     Antenna Passive Test Data Automation Archiving Tool V3.0    ')
+    print('     Antenna Passive Test Data Automation Archiving Tool V4.0    ')
     print('**************All rights are reserved by COROS******************')
     print("----------------------使用指南-----------------------------------")
     print("         1. 所有测试请选择标准模板")
@@ -298,7 +316,7 @@ if __name__ == '__main__':
         print("         1. 将导出的测试数据格式化写入到一个xlsx文件中")
         print("         2. 合并多个xlsx文件")
         print("         3. 数据评分")
-        print("         4. 重命名文件")
+        print("         4. 重命名sheet以及文件名")
         print("         5. 退出程序")
         print('===============================================================')
         selection = input("请输入你的选择：")
@@ -408,7 +426,7 @@ if __name__ == '__main__':
             print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
         elif selection == '4':
             print("****************************************************************")
-            print("========================4. 重命名文件==============================")
+            print("====================4. 重命名sheet以及文件名========================")
             print('***********************请选择一个文件*****************************')
             source_file = filedialog.askopenfilename(title='选定一个源文件')
             while source_file == '':
@@ -418,18 +436,24 @@ if __name__ == '__main__':
             source_file_name = source_file.replace(os.path.dirname(source_file) + '/', '').split('.')[0]
             # source_file_path = os.path.dirname(source_file)
             # path = r"\\nas.local\DATA\Wireless\Library\Components\for test"
-            # start_time = time.perf_counter()
+            start_time = time.perf_counter()
             # wb = xw.Book(source_file)
-            excel_name = input("==========请为所选文件输入一个新名字============\n")
+            excel_name = input("=======请为所选文件及其sheet输入一个新名字=========\n")
             while excel_name == '':
                 # print('名称为空，请再次输入xlsx名称')
                 excel_name = input("==========请为所选文件输入一个新名字============\n")
             os.rename(source_file, source_file.replace(source_file_name, excel_name))
-
-            print('     重命名成功')
-            # formatting_data(source_file, wb)
-            # print('     数据评分完成')
-            # print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+            wb = rename_sheet(source_file.replace(source_file_name, excel_name))
+            time.sleep(0.5)
+            if wb != 0:
+                print('     重命名成功')
+                print('     数据评分中...')
+                formatting_data(source_file.replace(source_file_name, excel_name), wb)
+                print('     数据评分完成')
+                # print('     数据评分完成')
+                print('总计用时: %s 秒' % (round((time.perf_counter() - start_time), 2)))
+            else:
+                print('     sheet重命名失败,仅文件被重命名')
         elif selection == '5':
             print("***************************************************************")
             sys.exit('Exit the program，have a good day')
