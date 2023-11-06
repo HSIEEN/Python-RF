@@ -5,17 +5,13 @@
 # Author: Shawn Shi
 # Right Reserved By COROS
 
-import xlwings as xw
 # import glob
 import copy
-# import time
+import time
 import math
 import numpy as np
 import pandas as pd
 from itertools import product
-import tkinter as tk
-from tkinter import filedialog
-import sys
 
 dut_gain = {}
 dut_effi = {}
@@ -87,7 +83,7 @@ def gain_chara_coloring(filename, xls_sheet):
     sheet_name = xls_sheet.name
     if 'L1-' in sheet_name or 'L5-' in sheet_name:
         # df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
-        df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N')
+        df = pd.read_excel(filename, sheet_name, header=27, usecols='B:N', engine='openpyxl')
         df.index = pd.Index(list(i for i in range(29, len(df) + 29)))
         # print(len(df.index))
         df.columns = pd.Index(list('BCDEFGHIJKLMN'))
@@ -130,7 +126,7 @@ def gain_chara_coloring(filename, xls_sheet):
             # print(col,row)
             xls_sheet.range(col + str(row)).color = gain_chara_color[int(df.loc[row, col])]
     elif 'BT-' in sheet_name:
-        df = pd.read_excel(filename, sheet_name, header=37, usecols='B:N')
+        df = pd.read_excel(filename, sheet_name, header=37, usecols='B:N', engine='openpyxl')
         df.index = pd.Index(list(i for i in range(39, len(df) + 39)))
         # print(len(df.index))
         df.columns = pd.Index(list('BCDEFGHIJKLMN'))
@@ -208,6 +204,7 @@ def get_data(filename, wb):
             effi_data['l5'] = []
             gain_value_ini(gain_data, 'l5')
         if dut in bt_dut_name:
+            effi_data['bt'] = []
             ds = wb.sheets['BT-' + dut]
             effi_value(ds, effi_data, 'bt')
         else:
@@ -338,7 +335,9 @@ def formatting_data(file, wb):
     # app.screen_updating = True
 
     get_data(file, wb)
+    time.sleep(0.5)
     write_data(wb)
+    time.sleep(0.5)
     wb.save()
     # except:
     # print('数据记录错误，请检查sheet名称是否正确并确认测试数据是否填充完整！！')
